@@ -1,0 +1,16 @@
+.article-page .main-article {
+  margin-bottom: 0 !important;
+}
+
+footer.site-footer {
+  margin-top: 1rem !important;
+}
+
+.article-content .heading-anchor,
+.article-content .anchor,
+.article-content a.header-anchor,
+.article-content h1 > a,
+.article-content h2 > a,
+.article-content h3 > a {
+  display: none !important;
+}

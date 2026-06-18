@@ -1,0 +1,57 @@
+baseURL = "https://midwestsec.com/"
+languageCode = "en-us"
+title = "MidwestSec"
+theme = "hugo-theme-stack"
+
+[pagination]
+  pagerSize = 10
+
+[params]
+  mainSections = ["posts"]
+  featuredImageField = "image"
+  rssFullContent = true
+  custom_css = ["scss/custom.scss"]
+
+[params.comments]
+  enabled = false
+
+[params.sidebar]
+  subtitle = "Cybersecurity"
+  avatar = "images/MidwestSec_bw.png"
+
+[params.article]
+  math = false
+  toc = true
+  readingTime = true
+  headingAnchor = true
+
+[[params.widgets.page]]
+  type = "toc"
+
+[markup]
+  [markup.tableOfContents]
+    startLevel = 2
+    endLevel = 4
+    ordered = false
+
+[params.footer]
+  since = 2026
+  customText = ""
+
+[[menu.main]]
+  identifier = "whoami"
+  name = "whoami"
+  url = "/posts/whoami/"
+  weight = 5
+
+[[menu.main]]
+  identifier = "posts"
+  name = "Posts"
+  url = "/posts/"
+  weight = 20
+
+[[menu.main]]
+  identifier = "tags"
+  name = "Tags"
+  url = "/tags/"
+  weight = 30
