@@ -1,4 +1,4 @@
-baseURL = "https://midwestsec.github.io/website/"
+baseURL = "https://midwestsec.com"
 languageCode = "en-us"
 title = "MidwestSec"
 theme = "hugo-theme-stack"
@@ -16,7 +16,7 @@ theme = "hugo-theme-stack"
   enabled = false
 
 [params.sidebar]
-  subtitle = "Cybersecurity"
+  subtitle = "Just a Guy Learning"
   avatar = "images/MidwestSec_bw.png"
 
 [params.article]
