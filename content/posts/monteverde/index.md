@@ -130,18 +130,18 @@ Knowing that SMB was open and I had valid credentials, I started to dig into the
 smbclient -L \\\\[Remote_Box_IP] -U sabatchjobs - password SABatchJobs - option 'client min protocol=SMB2'
 ```
 
-![SMB Shares](/posts/monteverde/shares.png)
+![SMB Shares](shares.png)
 
 Initially, I tried to perform a Group Policy Preferences (GPP) attack and see if there were any passwords saved in group policy that could be used to escalate. This attack focuses on GPO preferences and scans for any passwords that may be saved. The passwords are encrypted; however, Microsoft had released the public key which allows the data to be decrypted. I wasn’t successful, but I’ll detail the method to perform this attack.
 
 Open Metasploit (msfconsole) and run the smb_enum_gpp module. Enter the pertinent information and run it. It will connect to the server with the credentials provided and scan SYSVOL for credentials.
 
-![Running GPP Attack](/posts/monteverde/gpp.png)
+![Running GPP Attack](gpp.png)
 
 After my attempt with the GPP attack, I manually enumerated the rest of the shares. Of interest was the users$ share, particularly mhope. I dug into his share, as it was available to access. Within there I came across an azure.xml file. This exposed credentials in cleartext, which is a critical misconfiguration and a common real-world finding. Another win! My focus is privilege escalation toward domain admin now.
 
-![mhope Share](/posts/monteverde/azure.png)
-![Cleartext Password](/posts/monteverde/mhope_password.png)
+![mhope Share](azure.png)
+![Cleartext Password](mhope_password.png)
 
 ## Running into Trouble
 I repeated the same enumeration steps listed before, but with mhope, in hopes that his permissions would provide different data that my SABatchJobs account. Lo and behold, this did not reveal any additional attack paths.
@@ -174,15 +174,15 @@ I need to extract the instance_id, keyset_id and entropy from the existing datab
 sqlcmd -S MONTEVERDE -Q "use ADsync; select instance_id,keyset_id,entropy from mms_server_configuration"
 ```
 
-![Sync DB Info](/posts/monteverde/sqlcmd.png)
+![Sync DB Info](sqlcmd.png)
 
 After modifying the script, I was able to successfully decrypt the credentials stored within Entra ID Sync. This occurs because Entra ID Sync often stores highly privileged service account credentials. This highlights how synchronization services can unintentionally expose domain-level credentials if not properly secured.
 
-![Domain Admin Password](/posts/monteverde/DA%20creds.png)
+![Domain Admin Password](DA%20creds.png)
 
 I used Evil-WinRM with my new credentials as verification and successfully logged in. Once logged in, I captured the flag.
 
-![Root flag](/posts/monteverde/root%20txt.png)
+![Root flag](root%20txt.png)
 
 To recap, here is the attack path:
 

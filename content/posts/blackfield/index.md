@@ -54,7 +54,7 @@ When I see SMB is open, I always start there as it is often a good place to gath
 ```bash
 smbclient -L \\\\[IP]
 ```
-![SMB Shares](/posts/blackfield/shares.png)
+![SMB Shares](shares.png)
 
 This returns the usual shares in addition to a forensic and profiles$ share. I attempted to connect to forensic and failed due to permissions. The profiles$ share was next and it provided a ton of data.
 
@@ -72,7 +72,7 @@ I started the AS-REP roast and successfully gathered the hash of the support use
 sudo netexec ldap [DC IP] -u un.txt -p '' - asreproast hashes.txt - verbose - kdc [DC IP]
 ```
 
-![AS-Rep Roast](/posts/blackfield/asrep%20redacted.png)
+![AS-Rep Roast](asrep%20redacted.png)
 
 I ran that hash through hashcat and now have a valid account to further enumerate with.
 
@@ -80,7 +80,7 @@ I ran that hash through hashcat and now have a valid account to further enumerat
 hashcat -m 18200 -a 0 -o cracked.txt hashes.txt /usr/share/wordlists/rockyou.txt
 ```
 
-![Cracked Creds](/posts/blackfield/cracked%20redacted.png)
+![Cracked Creds](cracked%20redacted.png)
 
 ## Initial Foothold + Deeper Enumeration
 Now that I have a compromised account, I went back to the SMB shares and attempted to connect to the forensic share. That was still unsuccessful. Time to keep enumerating and find the user that has access to that share.
@@ -101,8 +101,8 @@ Once this ran, I imported the data into BloodHound and started looking at the su
 
 BloodHound showed that the support account had the ForceChangePassword permission over the audit2020 account.
 
-![BloodHound Find](/posts/blackfield/bh%20outbound.png)
-![BloodHound Find](/posts/blackfield/bh_aduit2020.png)
+![BloodHound Find](bh%20outbound.png)
+![BloodHound Find](bh_aduit2020.png)
 
 
 This means that my compromised account has control over something else. I looked and I was able to see that I could change the password to the audit2020 account. This was important! I could now change the password of another account, compromise it and (hopefully) enumerate more information.
@@ -132,7 +132,7 @@ setuserinfo2 audit2020 23 'Password123!'
 quit
 ```
 
-![Changing audit2020 password](/posts/blackfield/change%20password%20redacted.png)
+![Changing audit2020 password](change%20password%20redacted.png)
 
 The setuserinfo2 portion of the command is the function to modify a user object. Audit2020 is the account we want to modify. The 23 parameter tells rpcclient to perform a password reset without requiring the user’s current password. The quit command just exits the prompt. I have made even more progress! I now have two compromised accounts. This is important. I can begin to enumerate with a second account. With a name like audit2020 and an SMB share of forensic, things are starting to line up.
 
@@ -146,7 +146,7 @@ smbclient \\\\[IP]\\forensic -U blackfield/audit2020 --password Password123!
 
 I successfully connected to the forensic share. Another victory!
 
-![Accessing Forensic Share](/posts/blackfield/forensic%20share.png)
+![Accessing Forensic Share](forensic%20share.png)
 
 Within the share were a few folders; most notably “memory_analysis”. I investigated the folder and came across an LSASS dump file. LSASS is responsible for enforcing security policy and handling authentication processes on Windows systems. If I can analyze the dump file, I can grab the hash of other users, allowing me to continue moving through the machine.
 
@@ -157,18 +157,18 @@ pypykatz lsa minidump [path/to/file/]/lsass.DMP
 ```
 BINGO! I scanned through the output and saw the administrator account and associated password hash. I was ecstatic. I thought I had cracked the puzzle. I attempted to connect to the DC via evil-winrm and was unsuccessful. After investigating, it was pulling the hash of the local administrator, not the domain administrator. I continued to scan the output and came across the svc_backup user. Time to see where I can get with this account!
 
-![Service Account Hash](/posts/blackfield/svc_backup%20hash.png)
+![Service Account Hash](svc_backup%20hash.png)
 
 ## It's Backup Time!
 
 I hopped into BloodHound and pulled up the svc_backup account. I see that it is a member of the “Remote Management Users” and “Backup Operators” groups. This indicates that this account has elevated privileges. I fired up Evil-WinRM and connected with the hash I pulled from pypykatz.
 
-![Access with Service Account](/posts/blackfield/svc%20whoami.png)
+![Access with Service Account](svc%20whoami.png)
 
 I connected and, since this is Capture the Flag, I grabbed the flag. To verify that this account has backup permissions, I ran a quick check: whoami /priv.
 
-![Capturing User Flag](/posts/blackfield/user%20flag.png)
-![Service Account Privileges](/posts/blackfield/whoami%20priv.png)
+![Capturing User Flag](user%20flag.png)
+![Service Account Privileges](whoami%20priv.png)
 
 This verified that I have the SeBackupPrivilege. Due to this privilege, I can access sensitive files. I followed a walkthrough (grab link when this decides to work) to capitalize on this privilege. It walked me through getting the SAM file, which contains the hashes of local user accounts, the system hive and how to grab the hashes. Even though the SAM didn’t provide anything useful to me, it led me to the next step which allowed me to compromise the domain.
 
@@ -243,11 +243,11 @@ secretsdump.py -ntds ntds.dit -system system.hive LOCAL
 Upon completion, hashes of all users were presented, including the domain administrator account.
 
 
-![Domain Admin Hash](/posts/blackfield/real%20admin%20hash.png)
+![Domain Admin Hash](real%20admin%20hash.png)
 
 I used Evil-WinRM with my new hash and compromised the machine and Active Directory.
 
-![Root Flag](/posts/blackfield/root%20flag.png)
+![Root Flag](root%20flag.png)
 
 ## Thoughts
 When I started this box, I saw that it had been graded as hard. This was a bit concerning as I had struggled with a medium box before this. I knew that I would have to think back to my Practical Ethical Hacker (PEH) course. I know I needed to continue enumerating, find additional users, and keep moving forward. I think that making these writeups is helping this stick a little bit more. I’m having to think about the steps I took to successfully complete the machine and the reasons for them. As Einstein said, “If you can’t explain it simply, you don’t understand it well enough”. By no means am I saying I’m an expert, but this is forcing me to think about the “why”. On to the next one.

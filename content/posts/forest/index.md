@@ -146,7 +146,7 @@ That successfully gathered a hash for the user svc-alfresco. From there, I threw
 hashcat -m 18200 -a 0 -o cracked.txt hashes.txt /usr/share/wordlists/rockyou.txt
 ```
 
-![Hashcat output](/posts/forest/alfresco-crack.png)
+![Hashcat output](alfresco-crack.png)
 
 ## Next Steps
 Alright, I have credentials. Now what? I started over with checking SMB with my newly acquired credentials. The command I used was
@@ -166,11 +166,11 @@ After looking into ways to abuse WinRM, I came across a tool called evil-winrm. 
 evil-winrm -i 10.129.95.210 -u svc-alfresco -p [PASSWORD]
 ```
 
-![Using evil-winRM with svc-alfresco](/posts/forest/evil-winrm-alfresco.png)
+![Using evil-winRM with svc-alfresco](evil-winrm-alfresco.png)
 
 I was now in and had gained a foothold. Since this is a CTF, I immediately went and captured the user flag.
 
-![Capturing the user flag](/posts/forest/user-ctf.png)
+![Capturing the user flag](user-ctf.png)
 
 ## DACL
 I’ve captured the flag, great, now what? Well, it’s time to gain admin and finish the box. Reaching into my Windows privilege escalation notes, I tried a few things but got nowhere with them. Since I’m still new, I took a hint from the box. It mentioned write permissions on the DACL. What is a DACL? DACL stands for Discretionary Access Control List. At a basic level, it controls what an entity has access to. It utilizes access control entries (ACEs). ACEs define whether a user or group is allowed or denied access. If no ACE is present, access is denied by default.
@@ -192,7 +192,7 @@ Since I know I can add users to groups, I decided to go down that path. I added 
 net rpc group addmem “Exchange Windows Permissions” SVC-ALFRESCO -U “HTB.LOCAL/SVC-ALFRESCO%s3rvice” -S 10.129.95.210
 ```
 
-This group can modify ACLs within Active Directory. I then used a tool called [PowerView](/posts/forest//posts/forest/https://raw.githubusercontent.com/PowerShellMafia/PowerSploit/master/Recon/PowerView.ps1) and ran it on the remote machine.
+This group can modify ACLs within Active Directory. I then used a tool called [PowerView](/posts/forest/https://raw.githubusercontent.com/PowerShellMafia/PowerSploit/master/Recon/PowerView.ps1) and ran it on the remote machine.
 
 PowerView, in this case, modified the AD ACLs. This allows me to set up the compromised account to perform a DCSync attack, which replicates the AD environment to my machine. During the replication, the hashes of users are sent to my machine.
 
@@ -213,7 +213,7 @@ To run a DCSync, I use the following command on my attacking machine:
 impacket-secretsdump HTB.LOCAL/SVC-ALFRESCO:s3rvice@FOREST.htb.local
 ```
 
-![Capturing the Domain Admin hash](/posts/forest/da-hash.png)
+![Capturing the Domain Admin hash](da-hash.png)
 
 And with that I have the hash for the domain admin. From there I’m able to use the hash to get into the domain controller.
 
@@ -223,8 +223,8 @@ evil-winrm -i 10.129.95.210 -u Administrator -H [HASH]
 
 From there, I was able to full compromise the domain and capture the flag.
 
-![Domain Admin Proof](/posts/forest/da-whoami.png)
-![Cpturing the Root flag](/posts/forest/root-ctf.png)
+![Domain Admin Proof](da-whoami.png)
+![Cpturing the Root flag](root-ctf.png)
 
 ## Conclusion
 Overall, I needed a good amount of assistance on this box. I had never enumerated LDAP or modified DACLs before. I’ve updated my notes so I’ll be more prepared to identify attack paths and use similar techniques in the future.
