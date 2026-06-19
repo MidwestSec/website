@@ -79,12 +79,12 @@ dirbuster&
 
 The & allows it to open from the terminal but still allow other commands to run. I start with the DirBuster medium list and let it run. I select the “go faster” option. Since I know this is IIS, I select asp and aspx for file extensions. If this were Linux, I would leave it as PHP.
 
-![Dirbuster Window](/posts/sauna/dirbuster.png)
+![Dirbuster Window](dirbuster.png)
 
 While DirBuster is running, I’m analyzing the web site itself. I look at blogs and see a “jenny joy” that has posted. I make note of that as a potential user. I then see the “About” page. Looking through that, I see a list of employees. I created a txt file with different combinations their names. For example, first initial+last name, first name+last name, etc… After creating a list of potential usernames, I attempted AS-REP roasting. I followed the same path as I did in Forest, so I won’t go into that detail. After going through the AS-REP roasting, I was successful and obtained an AS-REP hash for fsmith. From there, I was able to crack the password using Hashcat. Again, it was the same process as Forest.
 
-![AS-REP Roast](/posts/sauna/asreproast.png)
-![Cracked AS-REP Roast Hash](/posts/sauna/crackeduserpw.png)
+![AS-REP Roast](asreproast.png)
+![Cracked AS-REP Roast Hash](crackeduserpw.png)
 
 ## Evil-WinRM + SharpHound
 
@@ -129,7 +129,7 @@ Now that I have the data, I imported the data into BloodHound.
 
 Again, I’m slowly learning the nuances of BloodHound. I analyzed the data I had for the fsmith account. It showed PSRemote as a potential escalation path. After looking into it, it wasn’t going to provide me any access that I didn’t already have by Evil-WinRM. As I mentioned earlier, I noticed that svc-loanmanager account. I investigated that account and noticed it had DCSync permissions already. This was the lightbulb moment. If I could compromise that account, I could perform a DCSync. DCSync allows for data replication from the domain controller, if the user has permissions to do so. When it syncs, it relays users and password hashes. I now have my next target.
 
-![BloodHound Links](/posts/sauna/bh_dcsync.png)
+![BloodHound Links](bh_dcsync.png)
 
 ## Stored Passwords + Privilege Escalation
 
@@ -147,7 +147,7 @@ reg query "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon"
 
 This brought back the password for the svc-loanmanager account that I was focused on. Now that I had those credentials, I could perform a DCSync attack and gather the hashes for all users within the domain.
 
-![Service account password](/posts/sauna/svc%20account.png)
+![Service account password](svc%20account.png)
 
 ## Compromise + Persistence
 
@@ -157,7 +157,7 @@ I performed the DCSync and gathered the hashes.
 impacket-secretsdump egotisticalbank/svc_loanmgr:'[PW]'@10.129.10.103
 ```
 
-![Successful DCSync](/posts/sauna/admin%20hash.png)
+![Successful DCSync](admin%20hash.png)
 
 Now that I have the administrator hash, I used Evil-WinRM to get back into the DC as the domain admin.
 
@@ -165,7 +165,7 @@ Now that I have the administrator hash, I used Evil-WinRM to get back into the D
 evil-winrm -i 10.129.10.103 -u Administrator -H [hash]
 ```
 
-![Domain Admin WinRM](/posts/sauna/admin.png)
+![Domain Admin WinRM](admin.png)
 
 I then navigated to the desktop and captured the flag. To demonstrate full domain compromise and persistence, I created a new domain administrator account. On the DC, I ran:
 
@@ -175,9 +175,9 @@ net group "Domain Admins" zach /add
 ```
 This created an account named zach that is a domain admin. Again, I used Evil-WinRM to gain access to the DC and prove that I was a domain admin.
 
-![New Admin Proof](/posts/sauna/add_da.png)
+![New Admin Proof](add_da.png)
 
-![Adding Domain Admin](/posts/sauna/zach_DA.png)
+![Adding Domain Admin](zach_DA.png)
 
 ## Final Thoughts
 
