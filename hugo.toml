@@ -1,4 +1,4 @@
-baseURL = "https://midwestsec.com/"
+baseURL = "https://midwestsec.github.io/website/"
 languageCode = "en-us"
 title = "MidwestSec"
 theme = "hugo-theme-stack"
