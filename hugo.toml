@@ -39,19 +39,31 @@ theme = "hugo-theme-stack"
   customText = ""
 
 [[menu.main]]
-  identifier = "whoami"
-  name = "whoami"
-  url = "/posts/whoami/"
-  weight = 5
+identifier = "home"
+name = "Home"
+url = "/"
+weight = 10
 
 [[menu.main]]
-  identifier = "posts"
-  name = "Posts"
-  url = "/posts/"
-  weight = 20
+identifier = "whoami"
+name = "whoami"
+url = "/whoami/"
+weight = 20
 
 [[menu.main]]
-  identifier = "tags"
-  name = "Tags"
-  url = "/tags/"
-  weight = 30
+identifier = "blog"
+name = "Blog"
+url = "/blog/"
+weight = 30
+
+[[menu.main]]
+identifier = "walkthroughs"
+name = "Walkthroughs"
+url = "/walkthroughs/"
+weight = 40
+
+[[menu.main]]
+identifier = "tags"
+name = "Tags"
+url = "/tags/"
+weight = 50

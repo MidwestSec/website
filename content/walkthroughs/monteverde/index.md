@@ -3,6 +3,7 @@ date = '2026-05-01'
 draft = false
 title = 'HTB - Monteverde'
 toc = true
+tags = ['Walkthrough', 'Hack The Box']
 +++
 
 ## Introduction

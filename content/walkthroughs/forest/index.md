@@ -3,6 +3,7 @@ date = '2026-04-07'
 draft = false
 title = 'HTB - Forest'
 toc = true
+tags = ['Walkthrough', 'Hack The Box']
 +++
 
 # Introduction
@@ -192,7 +193,7 @@ Since I know I can add users to groups, I decided to go down that path. I added 
 net rpc group addmem “Exchange Windows Permissions” SVC-ALFRESCO -U “HTB.LOCAL/SVC-ALFRESCO%s3rvice” -S 10.129.95.210
 ```
 
-This group can modify ACLs within Active Directory. I then used a tool called [PowerView](/posts/forest/https://raw.githubusercontent.com/PowerShellMafia/PowerSploit/master/Recon/PowerView.ps1) and ran it on the remote machine.
+This group can modify ACLs within Active Directory. I then used a tool called [PowerView](https://raw.githubusercontent.com/PowerShellMafia/PowerSploit/master/Recon/PowerView.ps1) and ran it on the remote machine.
 
 PowerView, in this case, modified the AD ACLs. This allows me to set up the compromised account to perform a DCSync attack, which replicates the AD environment to my machine. During the replication, the hashes of users are sent to my machine.
 

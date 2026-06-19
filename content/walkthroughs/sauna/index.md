@@ -3,6 +3,7 @@ date = '2026-04-12'
 draft = false
 title = 'HTB - Sauna'
 toc = true
+tags = ['Walkthrough', 'Hack The Box']
 +++
 
 ## Introduction
