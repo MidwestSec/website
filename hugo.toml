@@ -67,3 +67,9 @@ identifier = "tags"
 name = "Tags"
 url = "/tags/"
 weight = 50
+
+[[menu.main]]
+identifier = "newsletter"
+name = "Newsletter"
+url = "https://newsletter.midwestsec.com"
+weight = 60
