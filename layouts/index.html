@@ -1,12 +1,5 @@
 {{ define "main" }}
 <article class="main-article">
-    <header class="article-header">
-        <h1 class="article-title">MidwestSec</h1>
-        <div class="article-subtitle">
-            Cybersecurity. IT infrastructure. Penetration testing.
-        </div>
-    </header>
-
     <section class="article-content">
         {{ with .Site.GetPage "/" }}
             {{ .Content }}
