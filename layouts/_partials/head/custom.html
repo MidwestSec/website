@@ -1,0 +1,99 @@
+<link href="/pagefind/pagefind-ui.css" rel="stylesheet">
+
+<style>
+    #mw-search-button {
+        width: 100%;
+        padding: 10px 14px;
+        margin-bottom: 16px;
+        border: 1px solid var(--card-separator-color);
+        border-radius: 8px;
+        background: var(--card-background);
+        color: var(--card-text-color-main);
+        cursor: pointer;
+        text-align: left;
+        transition: background-color 0.2s ease;
+    }
+
+    #mw-search-button:hover {
+        background: var(--card-background-selected);
+    }
+
+    #mw-search-modal {
+        display: none;
+        position: fixed;
+        inset: 0;
+        z-index: 9999;
+        background: rgba(0, 0, 0, 0.65);
+        padding: 8vh 16px;
+        overflow-y: auto;
+    }
+
+    #mw-search-box {
+        max-width: 850px;
+        margin: auto;
+        background: var(--card-background);
+        color: var(--card-text-color-main);
+        border-radius: 12px;
+        padding: 24px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+    }
+
+    #mw-search-close {
+        margin-bottom: 16px;
+        padding: 8px 14px;
+        border: 1px solid var(--card-separator-color);
+        border-radius: 6px;
+        background: var(--card-background);
+        color: var(--card-text-color-main);
+        cursor: pointer;
+    }
+
+    /* ---------- Pagefind Theme ---------- */
+
+    .pagefind-ui {
+        --pagefind-ui-primary: var(--accent-color);
+        --pagefind-ui-text: var(--card-text-color-main);
+        --pagefind-ui-background: var(--card-background);
+        --pagefind-ui-border: var(--card-separator-color);
+        --pagefind-ui-tag: var(--accent-color);
+    }
+
+    .pagefind-ui,
+    .pagefind-ui * {
+        color: var(--card-text-color-main) !important;
+    }
+
+    .pagefind-ui__search-input {
+        background: var(--card-background) !important;
+        color: var(--card-text-color-main) !important;
+        border: 1px solid var(--card-separator-color) !important;
+    }
+
+    .pagefind-ui__drawer {
+        background: var(--card-background) !important;
+    }
+
+    .pagefind-ui__result {
+        background: var(--card-background) !important;
+        border-bottom: 1px solid var(--card-separator-color) !important;
+        padding: 16px 0 !important;
+    }
+
+    .pagefind-ui__result-title a,
+    .pagefind-ui__result-excerpt,
+    .pagefind-ui__message,
+    .pagefind-ui__result-link,
+    .pagefind-ui__button {
+        color: var(--card-text-color-main) !important;
+    }
+
+    .pagefind-ui__result-thumb img {
+        border-radius: 6px;
+    }
+
+    mark {
+        background: var(--accent-color);
+        color: var(--accent-color-text);
+        padding: 0 2px;
+    }
+</style>

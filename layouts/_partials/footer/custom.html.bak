@@ -1,0 +1,44 @@
+<script src="/pagefind/pagefind-ui.js"></script>
+
+<div id="mw-search-modal">
+    <div id="mw-search-box">
+        <button id="mw-search-close">Close</button>
+        <div id="search"></div>
+    </div>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const menu = document.querySelector(".menu");
+    if (menu) {
+        const button = document.createElement("button");
+        button.id = "mw-search-button";
+        button.textContent = "Search";
+        menu.prepend(button);
+    }
+
+    const modal = document.getElementById("mw-search-modal");
+    const close = document.getElementById("mw-search-close");
+
+    if (window.PagefindUI) {
+        new PagefindUI({
+            element: "#search",
+            showSubResults: true
+        });
+    }
+
+    document.addEventListener("click", function (e) {
+        if (e.target && e.target.id === "mw-search-button") {
+            modal.style.display = "block";
+        }
+
+        if (e.target && e.target.id === "mw-search-close") {
+            modal.style.display = "none";
+        }
+
+        if (e.target === modal) {
+            modal.style.display = "none";
+        }
+    });
+});
+</script>
