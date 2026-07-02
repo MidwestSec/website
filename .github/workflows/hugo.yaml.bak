@@ -28,11 +28,7 @@ jobs:
           hugo-version: '0.163.2'
           extended: true
 
-      - name: Build Hugo site
-        run: hugo --minify
-
-      - name: Build Pagefind search index
-        run: npx -y pagefind --site public
+      - run: hugo --minify
 
       - uses: actions/configure-pages@v5
 
