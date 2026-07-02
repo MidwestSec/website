@@ -1,13 +1,16 @@
-baseURL = "https://midwestsec.com"
-languageCode = "en-us"
+baseURL = "https://midwestsec.com/"
+defaultContentLanguage = "en"
+locale = "en-US"
 title = "MidwestSec"
 theme = "hugo-theme-stack"
+
+disableKinds = ["taxonomy"]
 
 [pagination]
   pagerSize = 10
 
 [params]
-  mainSections = ["posts"]
+  mainSections = ["blog", "walkthroughs"]
   featuredImageField = "image"
   rssFullContent = true
   custom_css = ["scss/custom.scss"]

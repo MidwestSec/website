@@ -33,7 +33,7 @@ jobs:
         run: hugo --minify
 
       - name: Build Pagefind search index
-        run: npx -y pagefind --site public
+        run: npx -y pagefind
 
       - uses: actions/configure-pages@v5
 
