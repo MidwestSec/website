@@ -4,7 +4,7 @@ locale = "en-US"
 title = "MidwestSec"
 theme = "hugo-theme-stack"
 
-disableKinds = ["taxonomy"]
+#disableKinds = ["taxonomy"]
 
 [pagination]
   pagerSize = 10
