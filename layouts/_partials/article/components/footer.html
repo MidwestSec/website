@@ -1,0 +1,37 @@
+<footer class="article-meta article-footer">
+    {{ partial "article/components/tags" . }}
+
+    {{ if and (.Site.Params.article.license.enabled) (not (eq .Params.license false)) }}
+    <section class="article-copyright inline-meta">
+        {{ partial "helper/icon" "copyright" }}
+        <span>{{ default .Site.Params.article.license.default .Params.license | markdownify }}</span>
+    </section>
+    {{ end }}
+
+    {{- if ne .Lastmod .Date -}}
+    <section class="article-lastmod inline-meta">
+        {{ partial "helper/icon" "clock" }}
+        <span>
+            {{ T "article.lastUpdatedOn" }} {{ .Lastmod | time.Format .Site.Params.dateFormat.lastUpdated }}
+        </span>
+    </section>
+    {{- end -}}
+
+    {{ if eq .Section "walkthroughs" }}
+    <nav class="mw-post-nav">
+        {{ with .PrevInSection }}
+        <a class="mw-post-nav-card mw-post-nav-prev" href="{{ .RelPermalink }}">
+            <span class="mw-post-nav-label">← Previous Walkthrough</span>
+            <strong>{{ .Title }}</strong>
+        </a>
+        {{ end }}
+
+        {{ with .NextInSection }}
+        <a class="mw-post-nav-card mw-post-nav-next" href="{{ .RelPermalink }}">
+            <span class="mw-post-nav-label">Next Walkthrough →</span>
+            <strong>{{ .Title }}</strong>
+        </a>
+        {{ end }}
+    </nav>
+    {{ end }}
+</footer>

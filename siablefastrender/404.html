@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="en-US" dir="ltr">
+    <head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script><meta charset='utf-8'>
+<meta name='viewport' content='width=device-width, initial-scale=1'><meta name='description' content="Just a Guy Learning">
+<title>404 Page not found</title>
+
+
+<link rel="canonical" href="http://localhost:1313/404.html">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap">
+
+
+<link rel="stylesheet" href="/scss/style.min.939567bcbd3acb48d79ff58d0271cb631c4a22521655556191d2a0d466ceb5fc.css"><meta property='og:title' content="404 Page not found">
+<meta property='og:description' content="Just a Guy Learning">
+<meta property='og:url' content='http://localhost:1313/404.html'>
+<meta property='og:site_name' content='MidwestSec'>
+<meta property='og:type' content='website'><meta property='og:updated_time' content=' 2026-06-30T00:00:00&#43;00:00 '/>
+<meta name="twitter:title" content="404 Page not found">
+<meta name="twitter:description" content="Just a Guy Learning"><link href="/pagefind/pagefind-ui.css" rel="stylesheet">
+
+<style>
+     
+
+    #mw-reading-progress {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 0%;
+        height: 3px;
+        z-index: 10000;
+        background: var(--accent-color);
+        transition: width 0.1s ease-out;
+    }
+
+     
+
+    #mw-search-button {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+
+        padding: 10px 14px;
+        margin-bottom: 16px;
+
+        border: 1px solid var(--card-separator-color);
+        border-radius: 8px;
+
+        background: var(--card-background);
+        color: var(--card-text-color-main);
+
+        cursor: pointer;
+        text-align: left;
+
+        transition: background-color 0.2s ease;
+    }
+
+    #mw-search-button:hover {
+        background: var(--card-background-selected);
+    }
+
+    .mw-search-left {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .mw-search-icon {
+        width: 18px;
+        height: 18px;
+        fill: currentColor;
+    }
+
+    .mw-search-shortcut {
+        font-size: 0.8em;
+        opacity: 0.65;
+    }
+
+     
+
+    #mw-search-modal {
+        display: none;
+        position: fixed;
+        inset: 0;
+        z-index: 9999;
+
+        padding: 8vh 16px;
+        overflow-y: auto;
+
+        background: rgba(0, 0, 0, 0.65);
+        backdrop-filter: blur(5px);
+    }
+
+    #mw-search-box {
+        max-width: 850px;
+        margin: auto;
+        padding: 24px;
+
+        background: var(--card-background);
+        color: var(--card-text-color-main);
+
+        border-radius: 12px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+    }
+
+    #mw-search-close {
+        margin-bottom: 16px;
+        padding: 8px 14px;
+
+        border: 1px solid var(--card-separator-color);
+        border-radius: 6px;
+
+        background: var(--card-background);
+        color: var(--card-text-color-main);
+
+        cursor: pointer;
+    }
+
+     
+
+    .pagefind-ui {
+        --pagefind-ui-primary: var(--accent-color);
+        --pagefind-ui-background: var(--card-background);
+        --pagefind-ui-text: var(--card-text-color-main);
+        --pagefind-ui-border: var(--card-separator-color);
+        --pagefind-ui-tag: var(--accent-color);
+    }
+
+    .pagefind-ui,
+    .pagefind-ui * {
+        color: var(--card-text-color-main) !important;
+    }
+
+    .pagefind-ui__search-input {
+        background: var(--card-background) !important;
+        color: var(--card-text-color-main) !important;
+        border: 1px solid var(--card-separator-color) !important;
+    }
+
+    .pagefind-ui__drawer {
+        background: var(--card-background) !important;
+    }
+
+    .pagefind-ui__result {
+        padding: 16px 0 !important;
+        background: var(--card-background) !important;
+        border-bottom: 1px solid var(--card-separator-color) !important;
+    }
+
+    .pagefind-ui__result-title a,
+    .pagefind-ui__result-excerpt,
+    .pagefind-ui__message,
+    .pagefind-ui__result-link,
+    .pagefind-ui__button {
+        color: var(--card-text-color-main) !important;
+    }
+
+    .pagefind-ui__result-thumb img {
+        border-radius: 6px;
+    }
+
+    .mw-result-meta {
+        margin-top: 4px;
+        margin-bottom: 8px;
+
+        font-size: 0.85em;
+        opacity: 0.7;
+    }
+
+    mark {
+        padding: 0 2px;
+        background: var(--accent-color);
+        color: var(--accent-color-text);
+    }
+</style>
+
+    </head>
+    <body class="">
+    <script>
+        (function() {
+            const colorSchemeKey = 'StackColorScheme';
+            if(!localStorage.getItem(colorSchemeKey)){
+                localStorage.setItem(colorSchemeKey, "auto");
+            }
+        })();
+    </script><script>
+    (function() {
+        const colorSchemeKey = 'StackColorScheme';
+        const colorSchemeItem = localStorage.getItem(colorSchemeKey);
+        const supportDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches === true;
+
+        if (colorSchemeItem == 'dark' || colorSchemeItem === 'auto' && supportDarkMode) {
+            
+
+            document.documentElement.dataset.scheme = 'dark';
+        } else {
+            document.documentElement.dataset.scheme = 'light';
+        }
+    })();
+</script>
+<div class="container main-container flex on-phone--column extended"><aside class="sidebar left-sidebar sticky ">
+    <button class="hamburger hamburger--spin" type="button" id="toggle-menu" aria-label="Toggle Menu">
+        <span class="hamburger-box">
+            <span class="hamburger-inner"></span>
+        </span>
+    </button>
+
+    <header>
+        <figure class="site-avatar">
+                <a href="/">
+                    <img src="/images/MidwestSec_bw.png" 
+                        width="1254"
+                        height="1254"
+                        class="site-logo"
+                        loading="lazy"
+                        alt="Avatar">
+                </a>
+                
+            </figure>
+        
+        
+        <div class="site-meta">
+            <h1 class="site-name"><a href="/">MidwestSec</a></h1>
+            <h2 class="site-description">Just a Guy Learning</h2>
+        </div>
+    </header><ol class="menu" id="main-menu">
+        
+        
+        
+        <li >
+            <a href='/' >
+                
+                <span>Home</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/whoami/' >
+                
+                <span>whoami</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/blog/' >
+                
+                <span>Blog</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/walkthroughs/' >
+                
+                <span>Walkthroughs</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/tags/' >
+                
+                <span>Tags</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='https://newsletter.midwestsec.com' >
+                
+                <span>Newsletter</span>
+            </a>
+        </li>
+        
+        <li class="menu-bottom-section">
+            <ol class="menu">
+
+                
+                    <li id="dark-mode-toggle">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-left" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="8" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-right" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="16" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                        <span>Dark Mode</span>
+                    </li>
+                
+            </ol>
+        </li>
+    </ol>
+</aside>
+
+            <main class="main full-width">
+    <div class="not-found-card">
+        <h1 class="article-title">Not Found</h1>
+        <h2 class="article-subtitle">This page does not exist</h2>
+    </div><footer class="site-footer">
+    <section class="copyright">
+        &copy; 
+        
+        2026 MidwestSec
+    </section>
+    
+    <section class="powerby">
+        Built with <a href="https://gohugo.io/" target="_blank" rel="noopener">Hugo</a> <br />
+        Theme <b><a href="https://github.com/CaiJimmy/hugo-theme-stack" target="_blank" rel="noopener" data-version="4.0.3">Stack</a></b> designed by <a href="https://jimmycai.com" target="_blank" rel="noopener">Jimmy</a>
+    </section>
+</footer>
+
+
+            </main>
+        </div>
+        
+<script type="text/javascript" src="/ts/main.f07e89f8b945a3818bfbdecdacc0e71d701338eaf57256cc61a181adf661b71c.js" defer></script>
+<script src="/pagefind/pagefind-ui.js"></script>
+
+<div id="mw-reading-progress"></div>
+
+<div id="mw-search-modal">
+    <div id="mw-search-box">
+        <button id="mw-search-close">Close</button>
+        <div id="search"></div>
+    </div>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const menu = document.querySelector(".menu");
+
+    if (menu) {
+        const button = document.createElement("button");
+        button.id = "mw-search-button";
+        button.innerHTML = `
+            <span class="mw-search-left">
+                <svg class="mw-search-icon" viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M10.5 18a7.5 7.5 0 1 1 5.3-12.8A7.5 7.5 0 0 1 10.5 18Zm0-2a5.5 5.5 0 1 0 0-11 5.5 5.5 0 0 0 0 11Zm6.4.5 4.3 4.3-1.4 1.4-4.3-4.3 1.4-1.4Z"></path>
+                </svg>
+                <span>Search</span>
+            </span>
+            <span class="mw-search-shortcut">Ctrl+K</span>
+        `;
+        menu.prepend(button);
+    }
+
+    const modal = document.getElementById("mw-search-modal");
+
+    function initPagefind() {
+        if (window.PagefindUI && !document.querySelector(".pagefind-ui")) {
+            new PagefindUI({
+                element: "#search",
+                showSubResults: true,
+                showImages: false,
+                excerptLength: 30
+            });
+        }
+    }
+
+    function focusSearchInput() {
+        setTimeout(function () {
+            const input = document.querySelector(".pagefind-ui__search-input");
+            if (input) input.focus();
+        }, 150);
+    }
+
+    function addResultMetadata() {
+        document.querySelectorAll(".pagefind-ui__result").forEach(function (result) {
+            if (result.querySelector(".mw-result-meta")) return;
+
+            const link = result.querySelector("a");
+            if (!link) return;
+
+            let type = "Page";
+            const href = link.getAttribute("href") || "";
+
+            if (href.includes("/walkthroughs/")) type = "Walkthrough";
+            if (href.includes("/blog/")) type = "Blog";
+            if (href.includes("/whoami/")) type = "About";
+
+            const meta = document.createElement("div");
+            meta.className = "mw-result-meta";
+            meta.textContent = type;
+
+            const title = result.querySelector(".pagefind-ui__result-title");
+            if (title) title.insertAdjacentElement("afterend", meta);
+        });
+    }
+
+    function openSearch() {
+        modal.style.display = "block";
+        initPagefind();
+        focusSearchInput();
+        setTimeout(addResultMetadata, 300);
+    }
+
+    function closeSearch() {
+        modal.style.display = "none";
+    }
+
+    function updateReadingProgress() {
+        const scrollTop = window.scrollY;
+        const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+        const bar = document.getElementById("mw-reading-progress");
+
+        if (!bar || docHeight <= 0) return;
+
+        const progress = (scrollTop / docHeight) * 100;
+        bar.style.width = progress + "%";
+    }
+
+    document.addEventListener("click", function (e) {
+        if (e.target.closest("#mw-search-button")) openSearch();
+        if (e.target.id === "mw-search-close") closeSearch();
+        if (e.target === modal) closeSearch();
+
+        setTimeout(addResultMetadata, 300);
+    });
+
+    document.addEventListener("keydown", function (e) {
+        if (e.key === "Escape" && modal.style.display === "block") {
+            closeSearch();
+        }
+
+        if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k") {
+            e.preventDefault();
+            modal.style.display === "block" ? closeSearch() : openSearch();
+        }
+
+        setTimeout(addResultMetadata, 300);
+    });
+
+    window.addEventListener("scroll", updateReadingProgress);
+    window.addEventListener("resize", updateReadingProgress);
+
+    initPagefind();
+    updateReadingProgress();
+});
+</script>
+
+
+    </body>
+</html>

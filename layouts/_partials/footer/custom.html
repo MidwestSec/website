@@ -1,8 +1,10 @@
 <script src="/pagefind/pagefind-ui.js"></script>
 
+<div id="mw-reading-progress"></div>
+
 <div id="mw-search-modal">
     <div id="mw-search-box">
-        <button id="mw-search-close">Close</button>
+        <button id="mw-search-close" type="button">Close</button>
         <div id="search"></div>
     </div>
 </div>
@@ -10,10 +12,12 @@
 <script>
 document.addEventListener("DOMContentLoaded", function () {
     const menu = document.querySelector(".menu");
+    const modal = document.getElementById("mw-search-modal");
 
-    if (menu) {
+    if (menu && !document.getElementById("mw-search-button")) {
         const button = document.createElement("button");
         button.id = "mw-search-button";
+        button.type = "button";
         button.innerHTML = `
             <span class="mw-search-left">
                 <svg class="mw-search-icon" viewBox="0 0 24 24" aria-hidden="true">
@@ -25,9 +29,6 @@ document.addEventListener("DOMContentLoaded", function () {
         `;
         menu.prepend(button);
     }
-
-    const modal = document.getElementById("mw-search-modal");
-    const close = document.getElementById("mw-search-close");
 
     function initPagefind() {
         if (window.PagefindUI && !document.querySelector(".pagefind-ui")) {
@@ -71,6 +72,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     function openSearch() {
+        if (!modal) return;
         modal.style.display = "block";
         initPagefind();
         focusSearchInput();
@@ -78,30 +80,194 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     function closeSearch() {
+        if (!modal) return;
         modal.style.display = "none";
+    }
+
+    function updateReadingProgress() {
+        const scrollTop = window.scrollY;
+        const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+        const bar = document.getElementById("mw-reading-progress");
+
+        if (!bar || docHeight <= 0) return;
+
+        bar.style.width = ((scrollTop / docHeight) * 100) + "%";
+    }
+
+    function getCodeText(code) {
+        return code.innerText.replace(/\n$/, "");
+    }
+
+    function fallbackCopyText(text) {
+        const textarea = document.createElement("textarea");
+        textarea.value = text;
+        textarea.setAttribute("readonly", "");
+        textarea.style.position = "fixed";
+        textarea.style.left = "-9999px";
+        textarea.style.top = "-9999px";
+
+        document.body.appendChild(textarea);
+        textarea.select();
+
+        let success = false;
+
+        try {
+            success = document.execCommand("copy");
+        } catch (err) {
+            success = false;
+        }
+
+        document.body.removeChild(textarea);
+        return success;
+    }
+
+    function addCodeCopyButtons() {
+        document.querySelectorAll(".mw-code-copy").forEach(function (button) {
+            if (button.dataset.copyReady === "true") return;
+
+            button.dataset.copyReady = "true";
+
+            button.addEventListener("click", function () {
+                const block = button.closest(".mw-code-block");
+                const code = block ? block.querySelector("code") : null;
+
+                if (!code) return;
+
+                const text = getCodeText(code);
+
+                function copied() {
+                    button.textContent = "Copied!";
+                    button.classList.add("copied");
+
+                    setTimeout(function () {
+                        button.textContent = "Copy";
+                        button.classList.remove("copied");
+                    }, 2000);
+                }
+
+                function failed() {
+                    button.textContent = "Failed";
+
+                    setTimeout(function () {
+                        button.textContent = "Copy";
+                    }, 2000);
+                }
+
+                if (navigator.clipboard && window.isSecureContext) {
+                    navigator.clipboard.writeText(text)
+                        .then(copied)
+                        .catch(function () {
+                            fallbackCopyText(text) ? copied() : failed();
+                        });
+                } else {
+                    fallbackCopyText(text) ? copied() : failed();
+                }
+            });
+        });
+    }
+
+    function initTocScrollSpy() {
+        const toc = document.getElementById("TableOfContents");
+        const article = document.querySelector(".article-content");
+
+        if (!toc || !article) return;
+
+        const tocLinks = Array.from(toc.querySelectorAll("a[href^='#']"));
+        const headings = tocLinks
+            .map(function (link) {
+                const id = decodeURIComponent(link.getAttribute("href").replace("#", ""));
+                const heading = document.getElementById(id);
+                return heading ? { id: id, heading: heading, link: link } : null;
+            })
+            .filter(Boolean);
+
+        if (!headings.length) return;
+
+        function setActiveTocLink() {
+            let active = headings[0];
+
+            headings.forEach(function (item) {
+                const top = item.heading.getBoundingClientRect().top;
+
+                if (top <= 120) {
+                    active = item;
+                }
+            });
+
+            tocLinks.forEach(function (link) {
+                link.classList.remove("mw-toc-active");
+            });
+
+            if (active && active.link) {
+                active.link.classList.add("mw-toc-active");
+            }
+        }
+
+        window.addEventListener("scroll", setActiveTocLink);
+        window.addEventListener("resize", setActiveTocLink);
+        setActiveTocLink();
     }
 
     document.addEventListener("click", function (e) {
         if (e.target.closest("#mw-search-button")) openSearch();
         if (e.target.id === "mw-search-close") closeSearch();
-        if (e.target === modal) closeSearch();
+        if (modal && e.target === modal) closeSearch();
 
         setTimeout(addResultMetadata, 300);
     });
 
     document.addEventListener("keydown", function (e) {
-        if (e.key === "Escape" && modal.style.display === "block") {
+        if (e.key === "Escape" && modal && modal.style.display === "block") {
             closeSearch();
         }
 
         if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k") {
             e.preventDefault();
-            modal.style.display === "block" ? closeSearch() : openSearch();
+            modal && modal.style.display === "block" ? closeSearch() : openSearch();
         }
 
         setTimeout(addResultMetadata, 300);
     });
 
+    window.addEventListener("scroll", updateReadingProgress);
+    window.addEventListener("resize", updateReadingProgress);
+
     initPagefind();
+    updateReadingProgress();
+    addCodeCopyButtons();
+    initTocScrollSpy();
 });
+</script>
+
+<script type="module">
+    import PhotoSwipeLightbox from "https://cdn.jsdelivr.net/npm/photoswipe@5.4.4/dist/photoswipe-lightbox.esm.js";
+
+    document.addEventListener("DOMContentLoaded", function () {
+        const article = document.querySelector(".article-content");
+
+        if (!article) return;
+
+        article.querySelectorAll("img").forEach(function (img) {
+            if (img.closest("a")) return;
+
+            const src = img.currentSrc || img.src;
+
+            const link = document.createElement("a");
+            link.href = src;
+            link.setAttribute("data-pswp-width", img.naturalWidth || 1600);
+            link.setAttribute("data-pswp-height", img.naturalHeight || 900);
+            link.classList.add("mw-lightbox-item");
+
+            img.parentNode.insertBefore(link, img);
+            link.appendChild(img);
+        });
+
+        const lightbox = new PhotoSwipeLightbox({
+            gallery: ".article-content",
+            children: "a.mw-lightbox-item",
+            pswpModule: () => import("https://cdn.jsdelivr.net/npm/photoswipe@5.4.4/dist/photoswipe.esm.js")
+        });
+
+        lightbox.init();
+    });
 </script>

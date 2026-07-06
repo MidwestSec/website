@@ -1,0 +1,823 @@
+<!DOCTYPE html>
+<html lang="en-US" dir="ltr">
+    <head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script><meta charset='utf-8'>
+<meta name='viewport' content='width=device-width, initial-scale=1'><meta name='description' content="Introduction Welcome back! In this walkthrough I go over Hack the Box’s Blackfield. After moving through 3 accounts, I discovered how to abuse backup permissions to grab the domain administrator credentials, compromise the domain and Capture the Flag.\nStarting off with Nmap.\nNmap scan report for 10.129.229.17 Host is up (0.030s latency). Not shown: 65526 filtered tcp ports (no-response) PORT STATE SERVICE VERSION 53/tcp open domain Simple DNS Plus 88/tcp open kerberos-sec Microsoft Windows Kerberos (server time: 2026-05-04 19:32:17Z) 135/tcp open msrpc Microsoft Windows RPC 139/tcp open tcpwrapped 389/tcp open ldap Microsoft Windows Active Directory LDAP (Domain: BLACKFIELD.local0., Site: Default-First-Site-Name) 445/tcp open microsoft-ds? 593/tcp open ncacn_http Microsoft Windows RPC over HTTP 1.0 3268/tcp open ldap Microsoft Windows Active Directory LDAP (Domain: BLACKFIELD.local0., Site: Default-First-Site-Name) 5985/tcp open http Microsoft HTTPAPI httpd 2.0 (SSDP/UPnP) |_http-server-header: Microsoft-HTTPAPI/2.0 |_http-title: Not Found Warning: OSScan results may be unreliable because we could not find at least 1 open and 1 closed port Device type: general purpose Running (JUST GUESSING): Microsoft Windows 2019|10 (97%) OS CPE: cpe:/o:microsoft:windows_server_2019 cpe:/o:microsoft:windows_10 Aggressive OS guesses: Windows Server 2019 (97%), Microsoft Windows 10 1903 - 21H1 (91%) No exact OS matches for host (test conditions non-ideal). Network Distance: 2 hops Service Info: Host: DC01; OS: Windows; CPE: cpe:/o:microsoft:windows Host script results: | smb2-time: | date: 2026-05-04T19:32:24 |_ start_date: N/A |_clock-skew: 6h59m58s | smb2-security-mode: | 3:1:1: |_ Message signing enabled and required As you can see, there are significantly fewer ports open than the other boxes I’ve completed. I notice Kerberos, SMB, LDAP and WinRM are open right away.\n">
+<title>HTB - Blackfield</title>
+
+
+<link rel="canonical" href="http://localhost:1313/walkthroughs/blackfield/">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap">
+
+
+<link rel="stylesheet" href="/scss/style.min.939567bcbd3acb48d79ff58d0271cb631c4a22521655556191d2a0d466ceb5fc.css"><meta property='og:title' content="HTB - Blackfield">
+<meta property='og:description' content="Introduction Welcome back! In this walkthrough I go over Hack the Box’s Blackfield. After moving through 3 accounts, I discovered how to abuse backup permissions to grab the domain administrator credentials, compromise the domain and Capture the Flag.\nStarting off with Nmap.\nNmap scan report for 10.129.229.17 Host is up (0.030s latency). Not shown: 65526 filtered tcp ports (no-response) PORT STATE SERVICE VERSION 53/tcp open domain Simple DNS Plus 88/tcp open kerberos-sec Microsoft Windows Kerberos (server time: 2026-05-04 19:32:17Z) 135/tcp open msrpc Microsoft Windows RPC 139/tcp open tcpwrapped 389/tcp open ldap Microsoft Windows Active Directory LDAP (Domain: BLACKFIELD.local0., Site: Default-First-Site-Name) 445/tcp open microsoft-ds? 593/tcp open ncacn_http Microsoft Windows RPC over HTTP 1.0 3268/tcp open ldap Microsoft Windows Active Directory LDAP (Domain: BLACKFIELD.local0., Site: Default-First-Site-Name) 5985/tcp open http Microsoft HTTPAPI httpd 2.0 (SSDP/UPnP) |_http-server-header: Microsoft-HTTPAPI/2.0 |_http-title: Not Found Warning: OSScan results may be unreliable because we could not find at least 1 open and 1 closed port Device type: general purpose Running (JUST GUESSING): Microsoft Windows 2019|10 (97%) OS CPE: cpe:/o:microsoft:windows_server_2019 cpe:/o:microsoft:windows_10 Aggressive OS guesses: Windows Server 2019 (97%), Microsoft Windows 10 1903 - 21H1 (91%) No exact OS matches for host (test conditions non-ideal). Network Distance: 2 hops Service Info: Host: DC01; OS: Windows; CPE: cpe:/o:microsoft:windows Host script results: | smb2-time: | date: 2026-05-04T19:32:24 |_ start_date: N/A |_clock-skew: 6h59m58s | smb2-security-mode: | 3:1:1: |_ Message signing enabled and required As you can see, there are significantly fewer ports open than the other boxes I’ve completed. I notice Kerberos, SMB, LDAP and WinRM are open right away.\n">
+<meta property='og:url' content='http://localhost:1313/walkthroughs/blackfield/'>
+<meta property='og:site_name' content='MidwestSec'>
+<meta property='og:type' content='article'><meta property='article:section' content='Walkthroughs' /><meta property='article:tag' content='Walkthrough' /><meta property='article:tag' content='Hack The Box' /><meta property='article:published_time' content='2026-05-18T00:00:00&#43;00:00'/><meta property='article:modified_time' content='2026-05-18T00:00:00&#43;00:00'/>
+<meta name="twitter:title" content="HTB - Blackfield">
+<meta name="twitter:description" content="Introduction Welcome back! In this walkthrough I go over Hack the Box’s Blackfield. After moving through 3 accounts, I discovered how to abuse backup permissions to grab the domain administrator credentials, compromise the domain and Capture the Flag.\nStarting off with Nmap.\nNmap scan report for 10.129.229.17 Host is up (0.030s latency). Not shown: 65526 filtered tcp ports (no-response) PORT STATE SERVICE VERSION 53/tcp open domain Simple DNS Plus 88/tcp open kerberos-sec Microsoft Windows Kerberos (server time: 2026-05-04 19:32:17Z) 135/tcp open msrpc Microsoft Windows RPC 139/tcp open tcpwrapped 389/tcp open ldap Microsoft Windows Active Directory LDAP (Domain: BLACKFIELD.local0., Site: Default-First-Site-Name) 445/tcp open microsoft-ds? 593/tcp open ncacn_http Microsoft Windows RPC over HTTP 1.0 3268/tcp open ldap Microsoft Windows Active Directory LDAP (Domain: BLACKFIELD.local0., Site: Default-First-Site-Name) 5985/tcp open http Microsoft HTTPAPI httpd 2.0 (SSDP/UPnP) |_http-server-header: Microsoft-HTTPAPI/2.0 |_http-title: Not Found Warning: OSScan results may be unreliable because we could not find at least 1 open and 1 closed port Device type: general purpose Running (JUST GUESSING): Microsoft Windows 2019|10 (97%) OS CPE: cpe:/o:microsoft:windows_server_2019 cpe:/o:microsoft:windows_10 Aggressive OS guesses: Windows Server 2019 (97%), Microsoft Windows 10 1903 - 21H1 (91%) No exact OS matches for host (test conditions non-ideal). Network Distance: 2 hops Service Info: Host: DC01; OS: Windows; CPE: cpe:/o:microsoft:windows Host script results: | smb2-time: | date: 2026-05-04T19:32:24 |_ start_date: N/A |_clock-skew: 6h59m58s | smb2-security-mode: | 3:1:1: |_ Message signing enabled and required As you can see, there are significantly fewer ports open than the other boxes I’ve completed. I notice Kerberos, SMB, LDAP and WinRM are open right away.\n"><link href="/pagefind/pagefind-ui.css" rel="stylesheet">
+
+<style>
+     
+
+    #mw-reading-progress {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 0%;
+        height: 3px;
+        z-index: 10000;
+        background: var(--accent-color);
+        transition: width 0.1s ease-out;
+    }
+
+     
+
+    #mw-search-button {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+
+        padding: 10px 14px;
+        margin-bottom: 16px;
+
+        border: 1px solid var(--card-separator-color);
+        border-radius: 8px;
+
+        background: var(--card-background);
+        color: var(--card-text-color-main);
+
+        cursor: pointer;
+        text-align: left;
+
+        transition: background-color 0.2s ease;
+    }
+
+    #mw-search-button:hover {
+        background: var(--card-background-selected);
+    }
+
+    .mw-search-left {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .mw-search-icon {
+        width: 18px;
+        height: 18px;
+        fill: currentColor;
+    }
+
+    .mw-search-shortcut {
+        font-size: 0.8em;
+        opacity: 0.65;
+    }
+
+     
+
+    #mw-search-modal {
+        display: none;
+        position: fixed;
+        inset: 0;
+        z-index: 9999;
+
+        padding: 8vh 16px;
+        overflow-y: auto;
+
+        background: rgba(0, 0, 0, 0.65);
+        backdrop-filter: blur(5px);
+    }
+
+    #mw-search-box {
+        max-width: 850px;
+        margin: auto;
+        padding: 24px;
+
+        background: var(--card-background);
+        color: var(--card-text-color-main);
+
+        border-radius: 12px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+    }
+
+    #mw-search-close {
+        margin-bottom: 16px;
+        padding: 8px 14px;
+
+        border: 1px solid var(--card-separator-color);
+        border-radius: 6px;
+
+        background: var(--card-background);
+        color: var(--card-text-color-main);
+
+        cursor: pointer;
+    }
+
+     
+
+    .pagefind-ui {
+        --pagefind-ui-primary: var(--accent-color);
+        --pagefind-ui-background: var(--card-background);
+        --pagefind-ui-text: var(--card-text-color-main);
+        --pagefind-ui-border: var(--card-separator-color);
+        --pagefind-ui-tag: var(--accent-color);
+    }
+
+    .pagefind-ui,
+    .pagefind-ui * {
+        color: var(--card-text-color-main) !important;
+    }
+
+    .pagefind-ui__search-input {
+        background: var(--card-background) !important;
+        color: var(--card-text-color-main) !important;
+        border: 1px solid var(--card-separator-color) !important;
+    }
+
+    .pagefind-ui__drawer {
+        background: var(--card-background) !important;
+    }
+
+    .pagefind-ui__result {
+        padding: 16px 0 !important;
+        background: var(--card-background) !important;
+        border-bottom: 1px solid var(--card-separator-color) !important;
+    }
+
+    .pagefind-ui__result-title a,
+    .pagefind-ui__result-excerpt,
+    .pagefind-ui__message,
+    .pagefind-ui__result-link,
+    .pagefind-ui__button {
+        color: var(--card-text-color-main) !important;
+    }
+
+    .pagefind-ui__result-thumb img {
+        border-radius: 6px;
+    }
+
+    .mw-result-meta {
+        margin-top: 4px;
+        margin-bottom: 8px;
+
+        font-size: 0.85em;
+        opacity: 0.7;
+    }
+
+    mark {
+        padding: 0 2px;
+        background: var(--accent-color);
+        color: var(--accent-color-text);
+    }
+</style>
+
+    </head>
+    <body class="
+    article-page
+    ">
+    <script>
+        (function() {
+            const colorSchemeKey = 'StackColorScheme';
+            if(!localStorage.getItem(colorSchemeKey)){
+                localStorage.setItem(colorSchemeKey, "auto");
+            }
+        })();
+    </script><script>
+    (function() {
+        const colorSchemeKey = 'StackColorScheme';
+        const colorSchemeItem = localStorage.getItem(colorSchemeKey);
+        const supportDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches === true;
+
+        if (colorSchemeItem == 'dark' || colorSchemeItem === 'auto' && supportDarkMode) {
+            
+
+            document.documentElement.dataset.scheme = 'dark';
+        } else {
+            document.documentElement.dataset.scheme = 'light';
+        }
+    })();
+</script>
+<div class="container main-container flex on-phone--column extended"><aside class="sidebar left-sidebar sticky ">
+    <button class="hamburger hamburger--spin" type="button" id="toggle-menu" aria-label="Toggle Menu">
+        <span class="hamburger-box">
+            <span class="hamburger-inner"></span>
+        </span>
+    </button>
+
+    <header>
+        <figure class="site-avatar">
+                <a href="/">
+                    <img src="/images/MidwestSec_bw.png" 
+                        width="1254"
+                        height="1254"
+                        class="site-logo"
+                        loading="lazy"
+                        alt="Avatar">
+                </a>
+                
+            </figure>
+        
+        
+        <div class="site-meta">
+            <h1 class="site-name"><a href="/">MidwestSec</a></h1>
+            <h2 class="site-description">Just a Guy Learning</h2>
+        </div>
+    </header><ol class="menu" id="main-menu">
+        
+        
+        
+        <li >
+            <a href='/' >
+                
+                <span>Home</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/whoami/' >
+                
+                <span>whoami</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/blog/' >
+                
+                <span>Blog</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/walkthroughs/' >
+                
+                <span>Walkthroughs</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/tags/' >
+                
+                <span>Tags</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='https://newsletter.midwestsec.com' >
+                
+                <span>Newsletter</span>
+            </a>
+        </li>
+        
+        <li class="menu-bottom-section">
+            <ol class="menu">
+
+                
+                    <li id="dark-mode-toggle">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-left" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="8" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-right" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="16" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                        <span>Dark Mode</span>
+                    </li>
+                
+            </ol>
+        </li>
+    </ol>
+</aside>
+
+    <aside class="sidebar right-sidebar sticky">
+        
+            
+                
+    <section class="widget archives">
+        <div class="widget-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-hash" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <line x1="5" y1="9" x2="19" y2="9" />
+  <line x1="5" y1="15" x2="19" y2="15" />
+  <line x1="11" y1="4" x2="7" y2="20" />
+  <line x1="17" y1="4" x2="13" y2="20" />
+</svg>
+
+
+
+        </div>
+        <h2 class="widget-title section-title">Table of contents</h2>
+        
+        <div class="widget--toc">
+            <nav class="toc-nav" id="TableOfContents">
+                
+  <ul>
+    <li><a href="#introduction">Introduction</a></li>
+    <li><a href="#smb">SMB</a></li>
+    <li><a href="#as-rep-roasting">AS-REP Roasting</a></li>
+    <li><a href="#initial-foothold--deeper-enumeration">Initial Foothold + Deeper Enumeration</a></li>
+    <li><a href="#how-do-i-change-this-password">How do I Change this Password!?</a></li>
+    <li><a href="#its-forensic-time">It&rsquo;s Forensic Time!</a></li>
+    <li><a href="#its-backup-time">It&rsquo;s Backup Time!</a></li>
+    <li><a href="#pwned">Pwned</a></li>
+    <li><a href="#thoughts">Thoughts</a></li>
+  </ul>
+
+            </nav>
+        </div>
+    </section>
+
+            
+        
+    </aside>
+
+
+            <main class="main full-width">
+    <article class="main-article">
+    <header class="article-header">
+
+    <div class="article-details">
+    
+
+    <div class="article-title-wrapper">
+        <h2 class="article-title">
+            <a href="/walkthroughs/blackfield/">HTB - Blackfield</a>
+        </h2>
+    
+        
+    </div>
+
+    
+    
+    
+    
+    
+    
+    
+    <footer class="article-meta">
+        
+            <div class="inline-meta">
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-calendar-time" width="56" height="56" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M11.795 21h-6.795a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v4" />
+  <circle cx="18" cy="18" r="4" />
+  <path d="M15 3v4" />
+  <path d="M7 3v4" />
+  <path d="M3 11h16" />
+  <path d="M18 16.496v1.504l1 1" />
+</svg>
+                    <time class="article-time--published" datetime='2026-05-18T00:00:00Z'>Monday, May 18, 2026</time>
+                
+
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <polyline points="12 7 12 12 15 15" />
+</svg>
+
+
+
+                    <time class="article-time--reading">
+                        10 minutes read
+                    </time>
+                
+            </div>
+        
+
+        
+
+        
+    </footer>
+    
+</div>
+
+</header>
+
+    
+    <aside class="article-toc">
+        <details>
+            <summary>
+                <div class="article-toc-title">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-chevron-right"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M9 6l6 6l-6 6" /></svg>
+                    <span>Table of contents</span>
+                </div>
+            </summary>
+            <nav class="toc-nav">
+                
+  <ul>
+    <li><a href="#introduction">Introduction</a></li>
+    <li><a href="#smb">SMB</a></li>
+    <li><a href="#as-rep-roasting">AS-REP Roasting</a></li>
+    <li><a href="#initial-foothold--deeper-enumeration">Initial Foothold + Deeper Enumeration</a></li>
+    <li><a href="#how-do-i-change-this-password">How do I Change this Password!?</a></li>
+    <li><a href="#its-forensic-time">It&rsquo;s Forensic Time!</a></li>
+    <li><a href="#its-backup-time">It&rsquo;s Backup Time!</a></li>
+    <li><a href="#pwned">Pwned</a></li>
+    <li><a href="#thoughts">Thoughts</a></li>
+  </ul>
+
+            </nav>
+        </details>
+    </aside>
+    
+
+    <section class="article-content">
+    
+    
+    <h2 id="introduction"><a href="#introduction" class="header-anchor"></a>Introduction
+</h2><p>Welcome back! In this walkthrough I go over Hack the Box’s Blackfield. After moving through 3 accounts, I discovered how to abuse backup permissions to grab the domain administrator credentials, compromise the domain and Capture the Flag.</p>
+<p>Starting off with Nmap.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>Nmap scan report <span style="color:#66d9ef">for</span> 10.129.229.17
+</span></span><span style="display:flex;"><span>Host is up <span style="color:#f92672">(</span>0.030s latency<span style="color:#f92672">)</span>.
+</span></span><span style="display:flex;"><span>Not shown: <span style="color:#ae81ff">65526</span> filtered tcp ports <span style="color:#f92672">(</span>no-response<span style="color:#f92672">)</span>
+</span></span><span style="display:flex;"><span>PORT     STATE SERVICE       VERSION
+</span></span><span style="display:flex;"><span>53/tcp   open  domain        Simple DNS Plus
+</span></span><span style="display:flex;"><span>88/tcp   open  kerberos-sec  Microsoft Windows Kerberos <span style="color:#f92672">(</span>server time: 2026-05-04 19:32:17Z<span style="color:#f92672">)</span>
+</span></span><span style="display:flex;"><span>135/tcp  open  msrpc         Microsoft Windows RPC
+</span></span><span style="display:flex;"><span>139/tcp  open  tcpwrapped
+</span></span><span style="display:flex;"><span>389/tcp  open  ldap          Microsoft Windows Active Directory LDAP <span style="color:#f92672">(</span>Domain: BLACKFIELD.local0., Site: Default-First-Site-Name<span style="color:#f92672">)</span>
+</span></span><span style="display:flex;"><span>445/tcp  open  microsoft-ds?
+</span></span><span style="display:flex;"><span>593/tcp  open  ncacn_http    Microsoft Windows RPC over HTTP 1.0
+</span></span><span style="display:flex;"><span>3268/tcp open  ldap          Microsoft Windows Active Directory LDAP <span style="color:#f92672">(</span>Domain: BLACKFIELD.local0., Site: Default-First-Site-Name<span style="color:#f92672">)</span>
+</span></span><span style="display:flex;"><span>5985/tcp open  http          Microsoft HTTPAPI httpd 2.0 <span style="color:#f92672">(</span>SSDP/UPnP<span style="color:#f92672">)</span>
+</span></span><span style="display:flex;"><span>|_http-server-header: Microsoft-HTTPAPI/2.0
+</span></span><span style="display:flex;"><span>|_http-title: Not Found
+</span></span><span style="display:flex;"><span>Warning: OSScan results may be unreliable because we could not find at least <span style="color:#ae81ff">1</span> open and <span style="color:#ae81ff">1</span> closed port
+</span></span><span style="display:flex;"><span>Device type: general purpose
+</span></span><span style="display:flex;"><span>Running <span style="color:#f92672">(</span>JUST GUESSING<span style="color:#f92672">)</span>: Microsoft Windows 2019|<span style="color:#ae81ff">10</span> <span style="color:#f92672">(</span>97%<span style="color:#f92672">)</span>
+</span></span><span style="display:flex;"><span>OS CPE: cpe:/o:microsoft:windows_server_2019 cpe:/o:microsoft:windows_10
+</span></span><span style="display:flex;"><span>Aggressive OS guesses: Windows Server <span style="color:#ae81ff">2019</span> <span style="color:#f92672">(</span>97%<span style="color:#f92672">)</span>, Microsoft Windows <span style="color:#ae81ff">10</span> <span style="color:#ae81ff">1903</span> - 21H1 <span style="color:#f92672">(</span>91%<span style="color:#f92672">)</span>
+</span></span><span style="display:flex;"><span>No exact OS matches <span style="color:#66d9ef">for</span> host <span style="color:#f92672">(</span>test conditions non-ideal<span style="color:#f92672">)</span>.
+</span></span><span style="display:flex;"><span>Network Distance: <span style="color:#ae81ff">2</span> hops
+</span></span><span style="display:flex;"><span>Service Info: Host: DC01; OS: Windows; CPE: cpe:/o:microsoft:windows
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>Host script results:
+</span></span><span style="display:flex;"><span>| smb2-time: 
+</span></span><span style="display:flex;"><span>|   date: 2026-05-04T19:32:24
+</span></span><span style="display:flex;"><span>|_  start_date: N/A
+</span></span><span style="display:flex;"><span>|_clock-skew: 6h59m58s
+</span></span><span style="display:flex;"><span>| smb2-security-mode: 
+</span></span><span style="display:flex;"><span>|   3:1:1: 
+</span></span><span style="display:flex;"><span>|_    Message signing enabled and required
+</span></span></code></pre></div><p>As you can see, there are significantly fewer ports open than the other boxes I’ve completed. I notice Kerberos, SMB, LDAP and WinRM are open right away.</p>
+<h2 id="smb"><a href="#smb" class="header-anchor"></a>SMB
+</h2><p>When I see SMB is open, I always start there as it is often a good place to gather data. I connect to the SMB shares via smbclient</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>smbclient -L <span style="color:#ae81ff">\\\\</span><span style="color:#f92672">[</span>IP<span style="color:#f92672">]</span>
+</span></span></code></pre></div><p><img alt="SMB Shares" class="gallery-image" data-flex-basis="652px" data-flex-grow="271" height="304" loading="lazy" sizes="(max-width: 767px) calc(100vw - 30px), (max-width: 1023px) 700px, (max-width: 1279px) 950px, 1232px" src="/walkthroughs/blackfield/shares.png" srcset="/walkthroughs/blackfield/shares_hu_ce35d22e3a33f78f.png 800w, /walkthroughs/blackfield/shares.png 826w" width="826"></p>
+<p>This returns the usual shares in addition to a forensic and profiles$ share. I attempted to connect to forensic and failed due to permissions. The profiles$ share was next and it provided a ton of data.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>smbclient <span style="color:#ae81ff">\\\\</span><span style="color:#f92672">[</span>IP<span style="color:#f92672">]</span><span style="color:#ae81ff">\\</span>profiles$
+</span></span></code></pre></div><p>Once connected, I searched the share and got a list of all the domain’s usernames. I went through the list manually to start, and added usernames to a file that I thought would be of interest. To start, I included the BConsultant, audit2020, support, and svc_backup accounts. With Kerberos being open, AS-REP roasting was my next step.</p>
+<h2 id="as-rep-roasting"><a href="#as-rep-roasting" class="header-anchor"></a>AS-REP Roasting
+</h2><p>I’ve learned that, at least in the labs, AS-REP is always a good choice to try. In modern environments, disabling Kerberos pre-authentication is not recommended because it exposes accounts to AS-REP roasting attacks. It is uncommon to see it disabled in environments today.</p>
+<p>I started the AS-REP roast and successfully gathered the hash of the support user.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>sudo netexec ldap <span style="color:#f92672">[</span>DC IP<span style="color:#f92672">]</span> -u un.txt -p <span style="color:#e6db74">&#39;&#39;</span> - asreproast hashes.txt - verbose - kdc <span style="color:#f92672">[</span>DC IP<span style="color:#f92672">]</span>
+</span></span></code></pre></div><p><img alt="AS-Rep Roast" loading="lazy" sizes="(max-width: 767px) calc(100vw - 30px), (max-width: 1023px) 700px, (max-width: 1279px) 950px, 1232px" src="asrep%20redacted.png"></p>
+<p>I ran that hash through hashcat and now have a valid account to further enumerate with.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>hashcat -m <span style="color:#ae81ff">18200</span> -a <span style="color:#ae81ff">0</span> -o cracked.txt hashes.txt /usr/share/wordlists/rockyou.txt
+</span></span></code></pre></div><p><img alt="Cracked Creds" loading="lazy" sizes="(max-width: 767px) calc(100vw - 30px), (max-width: 1023px) 700px, (max-width: 1279px) 950px, 1232px" src="cracked%20redacted.png"></p>
+<h2 id="initial-foothold--deeper-enumeration"><a href="#initial-foothold--deeper-enumeration" class="header-anchor"></a>Initial Foothold + Deeper Enumeration
+</h2><p>Now that I have a compromised account, I went back to the SMB shares and attempted to connect to the forensic share. That was still unsuccessful. Time to keep enumerating and find the user that has access to that share.</p>
+<p>Going back to my trusty friend, BloodHound, I enumerated Active Directory with the BloodHound python script. This script connects to the domain controller, using the compromised account, and provides a map of the Active Directory environment. The copy of the script I have is:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>sudo bloodhound-python -d <span style="color:#f92672">[</span>DOMAIN<span style="color:#f92672">]</span> -u <span style="color:#f92672">[</span>USER<span style="color:#f92672">]</span> -p <span style="color:#f92672">[</span>PASSWORD<span style="color:#f92672">]</span> -ns <span style="color:#f92672">[</span>DC IP<span style="color:#f92672">]</span> -c ALL
+</span></span></code></pre></div><p>Replacing the placeholders, my command was</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>sudo bloodhound-python -d blackfield -u support -p <span style="color:#f92672">[</span>PW<span style="color:#f92672">]</span> -ns <span style="color:#f92672">[</span>IP<span style="color:#f92672">]</span> -c ALL
+</span></span></code></pre></div><p>Once this ran, I imported the data into BloodHound and started looking at the support account.</p>
+<p>BloodHound showed that the support account had the ForceChangePassword permission over the audit2020 account.</p>
+<p><img alt="BloodHound Find" loading="lazy" sizes="(max-width: 767px) calc(100vw - 30px), (max-width: 1023px) 700px, (max-width: 1279px) 950px, 1232px" src="bh%20outbound.png">
+<img alt="BloodHound Find" class="gallery-image" data-flex-basis="2352px" data-flex-grow="980" height="222" loading="lazy" sizes="(max-width: 767px) calc(100vw - 30px), (max-width: 1023px) 700px, (max-width: 1279px) 950px, 1232px" src="/walkthroughs/blackfield/bh_aduit2020.png" srcset="/walkthroughs/blackfield/bh_aduit2020_hu_93436bb18d919512.png 800w, /walkthroughs/blackfield/bh_aduit2020_hu_e11af80149955674.png 1600w, /walkthroughs/blackfield/bh_aduit2020.png 2176w" width="2176"></p>
+<p>This means that my compromised account has control over something else. I looked and I was able to see that I could change the password to the audit2020 account. This was important! I could now change the password of another account, compromise it and (hopefully) enumerate more information.</p>
+<h2 id="how-do-i-change-this-password"><a href="#how-do-i-change-this-password" class="header-anchor"></a>How do I Change this Password!?
+</h2><p>At this point, I was venturing into uncharted territory. I’m used to changing account passwords through the domain controller. How can I change the password of another user when I don’t have access to Active Directory Users and Groups?</p>
+<p>I did some digging and there is a way to change it via rpcclient on my Kali machine. I installed the tool:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>sudo apt install samba-common-bin
+</span></span></code></pre></div><p>Then I ran the commands to change the audit2020 password</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>rpcclient -U <span style="color:#960050;background-color:#1e0010">&#39;</span>BLACKFIELD.local/support%<span style="color:#f92672">[</span>PW<span style="color:#f92672">]</span> <span style="color:#f92672">[</span>IP<span style="color:#f92672">]</span>
+</span></span></code></pre></div><p>This connects to the remote machine. I had to use the % between the user and password because the password starts with #. It wasn’t working otherwise.</p>
+<p>Once I got connected, I was able to change the password.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>setuserinfo2 audit2020 <span style="color:#ae81ff">23</span> <span style="color:#e6db74">&#39;Password123!&#39;</span>
+</span></span><span style="display:flex;"><span>quit
+</span></span></code></pre></div><p><img alt="Changing audit2020 password" loading="lazy" sizes="(max-width: 767px) calc(100vw - 30px), (max-width: 1023px) 700px, (max-width: 1279px) 950px, 1232px" src="change%20password%20redacted.png"></p>
+<p>The setuserinfo2 portion of the command is the function to modify a user object. Audit2020 is the account we want to modify. The 23 parameter tells rpcclient to perform a password reset without requiring the user’s current password. The quit command just exits the prompt. I have made even more progress! I now have two compromised accounts. This is important. I can begin to enumerate with a second account. With a name like audit2020 and an SMB share of forensic, things are starting to line up.</p>
+<h2 id="its-forensic-time"><a href="#its-forensic-time" class="header-anchor"></a>It&rsquo;s Forensic Time!
+</h2><p>I fired up smbclient again with my new account and attempted to connect to the forensic share.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>smbclient <span style="color:#ae81ff">\\\\</span><span style="color:#f92672">[</span>IP<span style="color:#f92672">]</span><span style="color:#ae81ff">\\</span>forensic -U blackfield/audit2020 --password Password123!
+</span></span></code></pre></div><p>I successfully connected to the forensic share. Another victory!</p>
+<p><img alt="Accessing Forensic Share" loading="lazy" sizes="(max-width: 767px) calc(100vw - 30px), (max-width: 1023px) 700px, (max-width: 1279px) 950px, 1232px" src="forensic%20share.png"></p>
+<p>Within the share were a few folders; most notably “memory_analysis”. I investigated the folder and came across an LSASS dump file. LSASS is responsible for enforcing security policy and handling authentication processes on Windows systems. If I can analyze the dump file, I can grab the hash of other users, allowing me to continue moving through the machine.</p>
+<p>Looking in the Tools folder, there was a tool called Volatility. Knowing that it was left there as a hint to complete the box, I started to learn about the tool. Volatility allows the user to analyze memory dumps. I attempted to use it on my machine, but I couldn’t get the newest version to work. I looked at alternatives and came across pypykatz. While Volatility is a full memory forensics tool, pypykatz analyzed the dump file and extracted the credentials more easily.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>pypykatz lsa minidump <span style="color:#f92672">[</span>path/to/file/<span style="color:#f92672">]</span>/lsass.DMP
+</span></span></code></pre></div><p>BINGO! I scanned through the output and saw the administrator account and associated password hash. I was ecstatic. I thought I had cracked the puzzle. I attempted to connect to the DC via evil-winrm and was unsuccessful. After investigating, it was pulling the hash of the local administrator, not the domain administrator. I continued to scan the output and came across the svc_backup user. Time to see where I can get with this account!</p>
+<p><img alt="Service Account Hash" loading="lazy" sizes="(max-width: 767px) calc(100vw - 30px), (max-width: 1023px) 700px, (max-width: 1279px) 950px, 1232px" src="svc_backup%20hash.png"></p>
+<h2 id="its-backup-time"><a href="#its-backup-time" class="header-anchor"></a>It&rsquo;s Backup Time!
+</h2><p>I hopped into BloodHound and pulled up the svc_backup account. I see that it is a member of the “Remote Management Users” and “Backup Operators” groups. This indicates that this account has elevated privileges. I fired up Evil-WinRM and connected with the hash I pulled from pypykatz.</p>
+<p><img alt="Access with Service Account" loading="lazy" sizes="(max-width: 767px) calc(100vw - 30px), (max-width: 1023px) 700px, (max-width: 1279px) 950px, 1232px" src="svc%20whoami.png"></p>
+<p>I connected and, since this is Capture the Flag, I grabbed the flag. To verify that this account has backup permissions, I ran a quick check: whoami /priv.</p>
+<p><img alt="Capturing User Flag" loading="lazy" sizes="(max-width: 767px) calc(100vw - 30px), (max-width: 1023px) 700px, (max-width: 1279px) 950px, 1232px" src="user%20flag.png">
+<img alt="Service Account Privileges" loading="lazy" sizes="(max-width: 767px) calc(100vw - 30px), (max-width: 1023px) 700px, (max-width: 1279px) 950px, 1232px" src="whoami%20priv.png"></p>
+<p>This verified that I have the SeBackupPrivilege. Due to this privilege, I can access sensitive files. I followed a walkthrough (grab link when this decides to work) to capitalize on this privilege. It walked me through getting the SAM file, which contains the hashes of local user accounts, the system hive and how to grab the hashes. Even though the SAM didn’t provide anything useful to me, it led me to the next step which allowed me to compromise the domain.</p>
+<p>To grab the files, I started within Evil-WinRM. I created a temp directory to dump all of the contents into. To grab the SAM, I ran the following command:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>reg save HKLM<span style="color:#ae81ff">\s</span>am C:<span style="color:#ae81ff">\t</span>emp<span style="color:#ae81ff">\s</span>am.hive
+</span></span></code></pre></div><p>Then I moved on to the system hive. The system hive contains the keys required to decrypt material.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>reg save HKLM<span style="color:#ae81ff">\s</span>ystem C:<span style="color:#ae81ff">\t</span>emp<span style="color:#ae81ff">\s</span>ystem.hive
+</span></span></code></pre></div><p>Now that I have both the SAM and system hives, I can work with secretsdump to get the hashes. I copied the files to my machine and ran</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>secretsdump.py -sam sam.hive -system system.hive LOCAL
+</span></span></code></pre></div><p>This successfully dumped the hashes of the users in SAM. I attempted to use the local administrative account and failed. I did some more investigating and started in on the NTDS file. This contains the hashes of the domain users, including the domain administrator.</p>
+<h2 id="pwned"><a href="#pwned" class="header-anchor"></a>Pwned
+</h2><p>Initially, I just tried to copy the NTDS file over. It is located at C:\Windows\NTDS\ntds.dit. I copied the file and attempted to use it with secretsdump. This failed, as I learned, because you need to create a backup of the file first and then dump it. Now I had to investigate how to create that backup.</p>
+<p>Because the account had the SeBackupPrivilege, I was able to utilize diskshadow.exe to create a Volume Shadow Copy of the C: drive. This allows access to protected files such as ntds.dit without directly interacting with the live Active Directory database, which is what I had attempted earlier and failed.</p>
+<p>Full disclosure, I used some <em>coughdigitalcough</em> assistance in getting this section completed. I used the following commands to create a TXT file. The file contains the commands that are needed to use diskshadow to create a backup of NTDS.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>cmd /c <span style="color:#e6db74">&#34;echo set context persistent nowriters&gt; shadow.txt&#34;</span>
+</span></span><span style="display:flex;"><span>cmd /c <span style="color:#e6db74">&#34;echo add volume c: alias vss&gt;&gt; shadow.txt&#34;</span>
+</span></span><span style="display:flex;"><span>cmd /c <span style="color:#e6db74">&#34;echo create&gt;&gt; shadow.txt&#34;</span>
+</span></span><span style="display:flex;"><span>cmd /c <span style="color:#e6db74">&#34;echo expose %vss% z:&gt;&gt; shadow.txt&#34;</span>
+</span></span><span style="display:flex;"><span>diskshadow.exe /s shadow.txt
+</span></span><span style="display:flex;"><span>robocopy /b Z:<span style="color:#ae81ff">\W</span>indows<span style="color:#ae81ff">\N</span>TDS C:<span style="color:#ae81ff">\t</span>emp ntds.dit
+</span></span></code></pre></div><p>The set context persistent nowriters command told DiskShadow to create a shadow copy while excluding VSS writers. Excluding writers helps avoid issues with services such as Active Directory that normally lock database files. Next,</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>cmd /c <span style="color:#e6db74">&#34;echo add volume c: alias vss
+</span></span></span></code></pre></div><p>specified that the C: volume should be shadowed and assigned the alias vss.</p>
+<p>The command</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>cmd /c <span style="color:#e6db74">&#34;echo create
+</span></span></span></code></pre></div><p>generates the actual snapshot.</p>
+<p>Finally,</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>cmd /c <span style="color:#e6db74">&#34;echo expose %vss% z:
+</span></span></span></code></pre></div><p>mounted the shadow copy as the Z: drive, allowing the snapshot contents to be browsed like a normal filesystem.</p>
+<p>Once the shadow copy was mounted, I used robocopy /b to copy the protected ntds.dit file from the snapshot. The /b switch forces Robocopy to operate in backup mode, allowing the process to utilize SeBackupPrivilege and bypass normal file access restrictions. After copying ntds.dit, the file could be transferred to Kali and processed offline with secretsdump to extract domain credential hashes utilizing the existing system hive I copied earlier.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>secretsdump.py -ntds ntds.dit -system system.hive LOCAL
+</span></span></code></pre></div><p>Upon completion, hashes of all users were presented, including the domain administrator account.</p>
+<p><img alt="Domain Admin Hash" loading="lazy" sizes="(max-width: 767px) calc(100vw - 30px), (max-width: 1023px) 700px, (max-width: 1279px) 950px, 1232px" src="real%20admin%20hash.png"></p>
+<p>I used Evil-WinRM with my new hash and compromised the machine and Active Directory.</p>
+<p><img alt="Root Flag" loading="lazy" sizes="(max-width: 767px) calc(100vw - 30px), (max-width: 1023px) 700px, (max-width: 1279px) 950px, 1232px" src="root%20flag.png"></p>
+<h2 id="thoughts"><a href="#thoughts" class="header-anchor"></a>Thoughts
+</h2><p>When I started this box, I saw that it had been graded as hard. This was a bit concerning as I had struggled with a medium box before this. I knew that I would have to think back to my Practical Ethical Hacker (PEH) course. I know I needed to continue enumerating, find additional users, and keep moving forward. I think that making these writeups is helping this stick a little bit more. I’m having to think about the steps I took to successfully complete the machine and the reasons for them. As Einstein said, “If you can’t explain it simply, you don’t understand it well enough”. By no means am I saying I’m an expert, but this is forcing me to think about the “why”. On to the next one.</p>
+
+</section>
+
+
+    <footer class="article-meta article-footer">
+    
+    <section class="article-tags">
+        
+            <a href="/tags/walkthrough/">Walkthrough</a>
+        
+            <a href="/tags/hack-the-box/">Hack the Box</a>
+        
+    </section>
+
+
+    </footer>
+
+
+    
+</article>
+
+    
+
+    
+
+<aside>
+    <h2 class="section-title">Related content</h2>
+    <div class="subsection-list">
+        <div class="article-list--tile">
+            
+                
+<article class="">
+    <a href="/walkthroughs/monteverde/">
+        
+
+        <div class="article-details">
+            <h2 class="article-title">HTB - Monteverde</h2>
+        </div>
+    </a>
+</article>
+            
+                
+<article class="">
+    <a href="/walkthroughs/sauna/">
+        
+
+        <div class="article-details">
+            <h2 class="article-title">HTB - Sauna</h2>
+        </div>
+    </a>
+</article>
+            
+                
+<article class="">
+    <a href="/walkthroughs/forest/">
+        
+
+        <div class="article-details">
+            <h2 class="article-title">HTB - Forest</h2>
+        </div>
+    </a>
+</article>
+            
+        </div>
+    </div>
+</aside>
+
+     
+    
+        
+
+
+    
+
+    <footer class="site-footer">
+    <section class="copyright">
+        &copy; 
+        
+        2026 MidwestSec
+    </section>
+    
+    <section class="powerby">
+        Built with <a href="https://gohugo.io/" target="_blank" rel="noopener">Hugo</a> <br />
+        Theme <b><a href="https://github.com/CaiJimmy/hugo-theme-stack" target="_blank" rel="noopener" data-version="4.0.3">Stack</a></b> designed by <a href="https://jimmycai.com" target="_blank" rel="noopener">Jimmy</a>
+    </section>
+</footer>
+
+
+    
+
+
+
+<script type="module">
+    import gallery from '\/ts\/gallery.js';
+
+    const articleContent = document.querySelector('.article-content');
+    const shouldLoad = articleContent && (articleContent.querySelectorAll('figure').length > 0 || articleContent.querySelectorAll('img.gallery-image').length > 0);
+    
+    if (shouldLoad) {
+        gallery(articleContent);
+
+        const PhotoSwipeLightbox = (await import("https:\/\/cdn.jsdelivr.net\/npm\/photoswipe@5.4.4\/dist\/photoswipe-lightbox.esm.min.js")).default;
+        const styleHref = "https:\/\/cdn.jsdelivr.net\/npm\/photoswipe@5.4.4\/dist\/photoswipe.css";
+
+        const styleTag = document.createElement('link');
+        styleTag.rel = 'stylesheet';
+        styleTag.href = styleHref;
+        document.head.appendChild(styleTag);
+
+        const lightbox = new PhotoSwipeLightbox({
+            gallerySelector: '.article-content',
+            childSelector: 'figure a.image-link',
+            pswpModule: () => import("https:\/\/cdn.jsdelivr.net\/npm\/photoswipe@5.4.4\/dist\/photoswipe.esm.min.js")
+        });
+        lightbox.init();
+    }
+</script>
+
+    
+
+            </main>
+        </div>
+        
+<script type="text/javascript" src="/ts/main.f07e89f8b945a3818bfbdecdacc0e71d701338eaf57256cc61a181adf661b71c.js" defer></script>
+<script src="/pagefind/pagefind-ui.js"></script>
+
+<div id="mw-reading-progress"></div>
+
+<div id="mw-search-modal">
+    <div id="mw-search-box">
+        <button id="mw-search-close">Close</button>
+        <div id="search"></div>
+    </div>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const menu = document.querySelector(".menu");
+
+    if (menu) {
+        const button = document.createElement("button");
+        button.id = "mw-search-button";
+        button.innerHTML = `
+            <span class="mw-search-left">
+                <svg class="mw-search-icon" viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M10.5 18a7.5 7.5 0 1 1 5.3-12.8A7.5 7.5 0 0 1 10.5 18Zm0-2a5.5 5.5 0 1 0 0-11 5.5 5.5 0 0 0 0 11Zm6.4.5 4.3 4.3-1.4 1.4-4.3-4.3 1.4-1.4Z"></path>
+                </svg>
+                <span>Search</span>
+            </span>
+            <span class="mw-search-shortcut">Ctrl+K</span>
+        `;
+        menu.prepend(button);
+    }
+
+    const modal = document.getElementById("mw-search-modal");
+
+    function initPagefind() {
+        if (window.PagefindUI && !document.querySelector(".pagefind-ui")) {
+            new PagefindUI({
+                element: "#search",
+                showSubResults: true,
+                showImages: false,
+                excerptLength: 30
+            });
+        }
+    }
+
+    function focusSearchInput() {
+        setTimeout(function () {
+            const input = document.querySelector(".pagefind-ui__search-input");
+            if (input) input.focus();
+        }, 150);
+    }
+
+    function addResultMetadata() {
+        document.querySelectorAll(".pagefind-ui__result").forEach(function (result) {
+            if (result.querySelector(".mw-result-meta")) return;
+
+            const link = result.querySelector("a");
+            if (!link) return;
+
+            let type = "Page";
+            const href = link.getAttribute("href") || "";
+
+            if (href.includes("/walkthroughs/")) type = "Walkthrough";
+            if (href.includes("/blog/")) type = "Blog";
+            if (href.includes("/whoami/")) type = "About";
+
+            const meta = document.createElement("div");
+            meta.className = "mw-result-meta";
+            meta.textContent = type;
+
+            const title = result.querySelector(".pagefind-ui__result-title");
+            if (title) title.insertAdjacentElement("afterend", meta);
+        });
+    }
+
+    function openSearch() {
+        modal.style.display = "block";
+        initPagefind();
+        focusSearchInput();
+        setTimeout(addResultMetadata, 300);
+    }
+
+    function closeSearch() {
+        modal.style.display = "none";
+    }
+
+    function updateReadingProgress() {
+        const scrollTop = window.scrollY;
+        const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+        const bar = document.getElementById("mw-reading-progress");
+
+        if (!bar || docHeight <= 0) return;
+
+        const progress = (scrollTop / docHeight) * 100;
+        bar.style.width = progress + "%";
+    }
+
+    document.addEventListener("click", function (e) {
+        if (e.target.closest("#mw-search-button")) openSearch();
+        if (e.target.id === "mw-search-close") closeSearch();
+        if (e.target === modal) closeSearch();
+
+        setTimeout(addResultMetadata, 300);
+    });
+
+    document.addEventListener("keydown", function (e) {
+        if (e.key === "Escape" && modal.style.display === "block") {
+            closeSearch();
+        }
+
+        if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k") {
+            e.preventDefault();
+            modal.style.display === "block" ? closeSearch() : openSearch();
+        }
+
+        setTimeout(addResultMetadata, 300);
+    });
+
+    window.addEventListener("scroll", updateReadingProgress);
+    window.addEventListener("resize", updateReadingProgress);
+
+    initPagefind();
+    updateReadingProgress();
+});
+</script>
+
+
+    </body>
+</html>

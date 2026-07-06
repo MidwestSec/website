@@ -1,8 +1,24 @@
 <link href="/pagefind/pagefind-ui.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/photoswipe@5.4.4/dist/photoswipe.css">
 
 <style>
+    #mw-reading-progress {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 0%;
+        height: 3px;
+        z-index: 10000;
+        background: var(--accent-color);
+        transition: width 0.1s ease-out;
+    }
+
     #mw-search-button {
         width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
         padding: 10px 14px;
         margin-bottom: 16px;
         border: 1px solid var(--card-separator-color);
@@ -18,23 +34,41 @@
         background: var(--card-background-selected);
     }
 
+    .mw-search-left {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .mw-search-icon {
+        width: 18px;
+        height: 18px;
+        fill: currentColor;
+    }
+
+    .mw-search-shortcut {
+        font-size: 0.8em;
+        opacity: 0.65;
+    }
+
     #mw-search-modal {
         display: none;
         position: fixed;
         inset: 0;
         z-index: 9999;
-        background: rgba(0, 0, 0, 0.65);
         padding: 8vh 16px;
         overflow-y: auto;
+        background: rgba(0, 0, 0, 0.65);
+        backdrop-filter: blur(5px);
     }
 
     #mw-search-box {
         max-width: 850px;
         margin: auto;
+        padding: 24px;
         background: var(--card-background);
         color: var(--card-text-color-main);
         border-radius: 12px;
-        padding: 24px;
         box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
     }
 
@@ -48,12 +82,10 @@
         cursor: pointer;
     }
 
-    /* ---------- Pagefind Theme ---------- */
-
     .pagefind-ui {
         --pagefind-ui-primary: var(--accent-color);
-        --pagefind-ui-text: var(--card-text-color-main);
         --pagefind-ui-background: var(--card-background);
+        --pagefind-ui-text: var(--card-text-color-main);
         --pagefind-ui-border: var(--card-separator-color);
         --pagefind-ui-tag: var(--accent-color);
     }
@@ -69,14 +101,14 @@
         border: 1px solid var(--card-separator-color) !important;
     }
 
-    .pagefind-ui__drawer {
+    .pagefind-ui__drawer,
+    .pagefind-ui__result {
         background: var(--card-background) !important;
     }
 
     .pagefind-ui__result {
-        background: var(--card-background) !important;
-        border-bottom: 1px solid var(--card-separator-color) !important;
         padding: 16px 0 !important;
+        border-bottom: 1px solid var(--card-separator-color) !important;
     }
 
     .pagefind-ui__result-title a,
@@ -91,40 +123,126 @@
         border-radius: 6px;
     }
 
-    mark {
-        background: var(--accent-color);
-        color: var(--accent-color-text);
-        padding: 0 2px;
+    .mw-result-meta {
+        margin-top: 4px;
+        margin-bottom: 8px;
+        font-size: 0.85em;
+        opacity: 0.7;
     }
 
-#mw-search-button {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 10px;
-}
+    mark {
+        padding: 0 2px;
+        background: var(--accent-color);
+        color: var(--accent-color-text);
+    }
 
-.mw-search-left {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
+    .article-content img {
+        cursor: zoom-in;
+    }
 
-.mw-search-icon {
-    width: 18px;
-    height: 18px;
-    fill: currentColor;
-}
+    .mw-lightbox-item {
+        display: inline-block;
+    }
 
-.mw-search-shortcut {
-    opacity: 0.65;
-    font-size: 0.8em;
-}
+    .mw-post-nav {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 16px;
+        margin-top: 32px;
+    }
 
-.mw-result-meta {
-    margin-top: 4px;
-    margin-bottom: 8px;
-    font-size: 0.85em;
-    opacity: 0.7;
-}
+    .mw-post-nav-card {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        padding: 18px;
+        border: 1px solid var(--card-separator-color);
+        border-radius: 12px;
+        background: var(--card-background);
+        color: var(--card-text-color-main);
+        text-decoration: none;
+        transition: transform 0.15s ease, background-color 0.15s ease;
+    }
+
+    .mw-post-nav-card:hover {
+        transform: translateY(-2px);
+        background: var(--card-background-selected);
+    }
+
+    .mw-post-nav-next {
+        text-align: right;
+    }
+
+    .mw-post-nav-label {
+        font-size: 0.85em;
+        opacity: 0.7;
+    }
+
+    .mw-code-block {
+        position: relative;
+        margin: 1.5em 0;
+    }
+
+    .mw-code-block::before {
+        content: attr(data-code-lang);
+        position: absolute;
+        top: 10px;
+        left: 12px;
+        z-index: 2;
+        padding: 3px 8px;
+        border-radius: 6px;
+        background: rgba(30, 30, 30, 0.85);
+        color: #fff;
+        font-size: 0.75rem;
+        font-family: monospace;
+        opacity: 0.75;
+        pointer-events: none;
+    }
+
+    .mw-code-copy {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        z-index: 3;
+        padding: 5px 9px;
+        border: 1px solid var(--card-separator-color);
+        border-radius: 6px;
+        background: rgba(30, 30, 30, 0.85);
+        color: #fff;
+        font-size: 0.75rem;
+        cursor: pointer;
+        opacity: 0;
+        transition: opacity 0.2s ease, background-color 0.2s ease;
+    }
+
+    .mw-code-block:hover .mw-code-copy,
+    .mw-code-copy:focus {
+        opacity: 1;
+    }
+
+    .mw-code-copy:hover {
+        background: var(--accent-color);
+    }
+
+    .mw-code-block pre {
+        margin: 0 !important;
+    }
+
+    @media (max-width: 700px) {
+        .mw-post-nav {
+            grid-template-columns: 1fr;
+        }
+
+        .mw-post-nav-next {
+            text-align: left;
+        }
+
+        .mw-code-copy {
+            opacity: 1;
+        }
+    }
+    #TableOfContents a.mw-toc-active {
+        color: var(--accent-color);
+        font-weight: 700;
+    }
 </style>

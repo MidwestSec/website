@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+    <channel>
+        <title>Blogs on MidwestSec</title>
+        <link>http://localhost:1313/blog/</link>
+        <description>Recent content in Blogs on MidwestSec</description>
+        <generator>Hugo -- gohugo.io</generator>
+        <language>en-US</language>
+        <lastBuildDate>Fri, 19 Jun 2026 00:00:00 +0000</lastBuildDate><atom:link href="http://localhost:1313/blog/index.xml" rel="self" type="application/rss+xml" /><item>
+            <title>My First Post</title>
+            <link>http://localhost:1313/blog/my-first-post/</link>
+            <pubDate>Fri, 19 Jun 2026 00:00:00 +0000</pubDate>
+            <guid>http://localhost:1313/blog/my-first-post/</guid>
+            <description>&lt;p&gt;Coming soon&amp;hellip;&lt;/p&gt;&#xA;</description>
+        </item></channel>
+</rss>

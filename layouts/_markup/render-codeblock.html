@@ -1,0 +1,7 @@
+{{ $lang := .Type | default "text" }}
+{{ $code := .Inner }}
+
+<div class="mw-code-block" data-code-lang="{{ lower $lang }}">
+    <button class="mw-code-copy" type="button" aria-label="Copy code">Copy</button>
+    {{ highlight $code $lang .Options }}
+</div>
