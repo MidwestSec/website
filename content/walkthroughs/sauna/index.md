@@ -3,13 +3,44 @@ date = '2026-04-12'
 draft = false
 title = 'HTB - Sauna'
 toc = true
-tags = ['Walkthrough', 'Hack The Box']
+tags = [
+  "Hack The Box",
+  "Windows",
+  "Active Directory",
+  "HTTP",
+  "AS-REP Roasting",
+  "BloodHound",
+  "WinRM",
+  "DCSync"
+]
 +++
 
 ## Introduction
 
 If you’re reading this, hello again! I finished up Hack the Box’s 
 _Sauna_. This one went a lot quicker than I had anticipated. As I mentioned in my Forest walkthrough, these are meant to be a reference for future me. What I didn’t know was that it was going to come into play so quickly. Let’s jump in.
+
+## Tools Used
+
+**Enumeration**
+- Nmap
+- DirBuster
+
+**Credential Attacks**
+- NetExec
+- Hashcat
+
+**Authentication**
+- evil-winrm
+
+**Active Directory**
+- SharpHound
+- BloodHound
+- Impacket smbserver.py
+- Impacket secretsdump.py
+
+**Credential Discovery**
+- Windows Registry
 
 ## Enumeration
 
@@ -183,3 +214,11 @@ This created an account named zach that is a domain admin. Again, I used Evil-Wi
 ## Final Thoughts
 
 Overall, the initial foothold was the same as Forest. Pattern recognition is starting to click, especially recognizing when WinRM and AS-REP roasting can be reused across similar environments. I quickly realized that WinRM and AS-REP roasting were viable paths based on patterns from previous machines. This was a fun box and I’m looking forward to continuing to improve.
+
+## Key Takeaways
+
+- Public-facing websites can reveal employee names that are useful for username generation.
+- Pattern recognition from previous engagements can dramatically speed up enumeration.
+- BloodHound helps prioritize high-value accounts for further investigation.
+- Stored credentials in the Windows registry can provide an easy privilege escalation path.
+- DCSync remains one of the fastest paths to complete domain compromise when the required permissions are available.

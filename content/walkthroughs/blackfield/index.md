@@ -3,13 +3,51 @@ date = '2026-05-18'
 draft = false
 title = 'HTB - Blackfield'
 toc = true
-tags = ['Walkthrough', 'Hack The Box']
+tags = [
+  "Hack The Box",
+  "Windows",
+  "Active Directory",
+  "SMB",
+  "AS-REP Roasting",
+  "BloodHound",
+  "Memory Forensics",
+  "WinRM"
+]
 +++
 
 ## Introduction
 
 Welcome back! In this walkthrough I go over Hack the Box’s Blackfield. After moving through 3 accounts, I discovered how to abuse backup permissions to grab the domain administrator credentials, compromise the domain and Capture the Flag.
 
+## Tools Used
+
+**Enumeration**
+- Nmap
+- smbclient
+
+**Credential Attacks**
+- NetExec
+- Hashcat
+
+**Authentication**
+- evil-winrm
+- rpcclient
+
+**Active Directory**
+- BloodHound
+- bloodhound-python
+
+**Memory Analysis**
+- pypykatz
+
+**Credential Extraction**
+- Impacket secretsdump.py
+
+**Windows Utilities**
+- diskshadow
+- robocopy
+
+## Nmap
 Starting off with Nmap.
 
 ```bash
@@ -252,3 +290,11 @@ I used Evil-WinRM with my new hash and compromised the machine and Active Direct
 
 ## Thoughts
 When I started this box, I saw that it had been graded as hard. This was a bit concerning as I had struggled with a medium box before this. I knew that I would have to think back to my Practical Ethical Hacker (PEH) course. I know I needed to continue enumerating, find additional users, and keep moving forward. I think that making these writeups is helping this stick a little bit more. I’m having to think about the steps I took to successfully complete the machine and the reasons for them. As Einstein said, “If you can’t explain it simply, you don’t understand it well enough”. By no means am I saying I’m an expert, but this is forcing me to think about the “why”. On to the next one.
+
+## Key Takeaways
+
+- Anonymous SMB access can provide valuable reconnaissance, including valid usernames.
+- AS-REP Roasting remains an effective attack when Kerberos pre-authentication is disabled.
+- BloodHound can uncover privilege escalation paths such as ForceChangePassword that are easy to overlook manually.
+- LSASS memory dumps can expose credentials that aren't obtainable through traditional enumeration.
+- SeBackupPrivilege can be abused to access protected files and ultimately compromise Active Directory.

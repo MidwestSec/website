@@ -3,11 +3,44 @@ date = '2026-05-01'
 draft = false
 title = 'HTB - Monteverde'
 toc = true
-tags = ['Walkthrough', 'Hack The Box']
+tags = [
+  "Hack The Box",
+  "Windows",
+  "Active Directory",
+  "LDAP",
+  "SMB",
+  "BloodHound",
+  "WinRM",
+  "Entra ID"
+]
 +++
 
 ## Introduction
 Hello again! This write up is going over Hack the Box’s _Monteverde_. I worked through most of the box independently but relied on the walkthrough for the final steps. We’ll get into more detail as we get there.
+
+## Tools Used
+
+**Enumeration**
+- Nmap
+- enum4linux
+- ldapsearch
+- smbclient
+- ldapdomaindump
+
+**Credential Attacks**
+- Hydra
+
+**Authentication**
+- evil-winrm
+
+**Active Directory**
+- SharpHound
+- BloodHound
+- Metasploit (smb_enum_gpp)
+- Impacket GetUserSPNs.py
+
+**Database Analysis**
+- sqlcmd
 
 ## Nmap
 As always, we start with an Nmap scan.
@@ -195,3 +228,11 @@ I’m learning that as soon as I feel that I’m starting to grasp concepts and 
 Overall, I’m continuing to move forward, learn new things and begin to implement what I’m learning as I’m moving forward. Two boxes ago, I had no idea that Evil-WinRM was a tool and now I’m using it all the time. One key takeaway from this box is to always consider Entra ID Sync as a high-value target in hybrid environments.
 
 Small progress is still progress.
+
+## Key Takeaways
+
+- Don't stop at basic LDAP enumeration—user descriptions and other attributes can reveal sensitive information.
+- Weak password hygiene is still a common path to an initial foothold.
+- SMB shares frequently expose sensitive configuration files and credentials.
+- BloodHound is valuable for validating attack paths even when it doesn't reveal the complete solution.
+- Entra ID Connect servers should always be considered high-value targets because they often store privileged credentials.

@@ -3,11 +3,44 @@ date = '2026-06-30'
 draft = false
 title = 'HTB - Sizzle'
 toc = true
-tags = ['Walkthrough', 'Hack The Box']
+tags = [
+  "Hack The Box",
+  "Windows",
+  "Active Directory",
+  "SMB",
+  "NTLM",
+  "Active Directory Certificate Services",
+  "Kerberoasting",
+  "DCSync"
+]
 +++
 
 ## Introduction
 Welcome back to another writeup! I’m going to be going through Hack the Box’s Sizzle. This one was a doozy and, I won’t lie, I used hints from the description of the box and several walkthroughs to finish this box. Sizzle requires that you grab NTLM hashes via SMB, abuse the certificate authority, Kerberoast and DCSync to finish the box. 
+
+## Tools Used
+
+**Enumeration**
+- Nmap
+- smbclient
+- DirBuster
+
+**Credential Attacks**
+- Hashcat
+- ntlm_theft
+
+**Authentication**
+- OpenSSL
+- WinRM Shell (Ruby)
+
+**Active Directory**
+- BloodHound
+- PowerView
+- Impacket dacledit.py
+- Impacket secretsdump.py
+
+**File Transfer**
+- PowerShell
 
 ## Nmap
 Let’s get things started with NMAP.
@@ -285,3 +318,11 @@ This box was extremely humbling. The box was labeled as “insane” in terms of
 Sizzle forced me to combine several techniques that I'd previously practiced independently. Capturing NTLM hashes, abusing Active Directory Certificate Services, Kerberoasting, and finally performing a DCSync attack all had to be chained together correctly. Although I relied on hints throughout the process, I walked away with a much deeper understanding of how these attacks fit together in a real Active Directory environment. 
 
 Thank you, the reader, for following along on this journey. 
+
+## Key Takeaways
+
+- Writable SMB shares can be abused to capture NTLM authentication attempts.
+- Active Directory Certificate Services can become a powerful attack vector when enrollment permissions are overly permissive.
+- Certificate-based authentication can provide access even when password authentication isn't possible.
+- Kerberoasting remains an effective technique for targeting service accounts with weak passwords.
+- Chaining multiple techniques together is often required to achieve full domain compromise.

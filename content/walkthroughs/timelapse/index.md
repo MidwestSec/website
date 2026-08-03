@@ -40,7 +40,7 @@ Welcome back to another walkthrough! It's been a few weeks since my last post, b
 - PowerShell
 
 **File Transfer**
-- Impacket `smbserver.py`
+- Impacket smbserver.py
 - unzip
 
 ## Nmap
@@ -278,8 +278,8 @@ Again, thank you for coming along on this journey.
 ## Key Takeaways
 
 - Never dismiss accessible SMB shares—they often contain sensitive files or credentials.
-- Password-protected ZIP and PFX files aren't dead ends. Tools like `zip2john`, `PFX2john`, and John the Ripper can often recover the passwords.
+- Password-protected ZIP and PFX files aren't dead ends. Tools like zip2john, PFX2john, and John the Ripper can often recover the passwords.
 - Certificate-based authentication can provide an initial foothold without knowing a user's password.
 - BloodHound is invaluable for identifying privilege escalation paths that aren't immediately obvious.
-- Always review PowerShell history (`ConsoleHost_history.txt`). It can contain hardcoded credentials or administrative scripts.
+- Always review PowerShell history (ConsoleHost_history.txt). It can contain hardcoded credentials or administrative scripts.
 - If LAPS is deployed, identify which users or groups have permission to read managed passwords.z

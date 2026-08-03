@@ -47,31 +47,31 @@ url = "/"
 weight = 10
 
 [[menu.main]]
-identifier = "whoami"
-name = "whoami"
-url = "/whoami/"
+identifier = "walkthroughs"
+name = "Walkthroughs"
+url = "/walkthroughs/"
 weight = 20
+
+[[menu.main]]
+identifier = "kb"
+name = "KB"
+url = "/kb/"
+weight = 30
 
 [[menu.main]]
 identifier = "blog"
 name = "Blog"
 url = "/blog/"
-weight = 30
-
-[[menu.main]]
-identifier = "walkthroughs"
-name = "Walkthroughs"
-url = "/walkthroughs/"
 weight = 40
-
-[[menu.main]]
-identifier = "tags"
-name = "Tags"
-url = "/tags/"
-weight = 50
 
 [[menu.main]]
 identifier = "newsletter"
 name = "Newsletter"
 url = "https://newsletter.midwestsec.com"
+weight = 50
+
+[[menu.main]]
+identifier = "whoami"
+name = "Whoami"
+url = "/whoami/"
 weight = 60

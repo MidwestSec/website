@@ -3,12 +3,40 @@ date = '2026-04-07'
 draft = false
 title = 'HTB - Forest'
 toc = true
-tags = ['Walkthrough', 'Hack The Box']
+tags = [
+  "Hack The Box",
+  "Windows",
+  "Active Directory",
+  "LDAP",
+  "AS-REP Roasting",
+  "WinRM",
+  "BloodHound",
+  "DCSync"
+]
 +++
 
 # Introduction
 
 Hello and welcome to my first walkthrough. I’m going over Hack the Box’s _Forest_ box. While working on this box, I learned about AS-REP roasting and DACL attacks. I’m still new to the red-team world so all of this was new and exciting to learn about! Throughout this writeup, you’ll see me use [IP] as a placeholder for the IP of the machine. This is because I had to reset it daily as I get ~30 minutes a day to work on these boxes.
+
+## Tools Used
+
+**Enumeration**
+- Nmap
+- smbclient
+- enum4linux
+
+**Credential Attacks**
+- NetExec
+- Hashcat
+
+**Authentication**
+- evil-winrm
+
+**Active Directory**
+- BloodHound
+- PowerView
+- Impacket secretsdump.py
 
 ## Initial Enumeration
 
@@ -229,3 +257,11 @@ From there, I was able to full compromise the domain and capture the flag.
 
 ## Conclusion
 Overall, I needed a good amount of assistance on this box. I had never enumerated LDAP or modified DACLs before. I’ve updated my notes so I’ll be more prepared to identify attack paths and use similar techniques in the future.
+
+## Key Takeaways
+
+- LDAP enumeration can reveal valuable information such as usernames and domain details before authentication.
+- AS-REP Roasting should always be tested against Active Directory environments with exposed Kerberos.
+- WinRM provides an excellent foothold when valid credentials are obtained.
+- BloodHound helps identify privilege escalation paths that aren't immediately obvious.
+- Misconfigured ACLs can allow attackers to grant themselves DCSync permissions and fully compromise a domain.
