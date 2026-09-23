@@ -18,7 +18,7 @@ theme = "hugo-theme-stack"
   enabled = false
 
 [params.sidebar]
-  subtitle = "Just a Guy Learning"
+  subtitle = "Learning. Breaking. Defending."
   avatar = "images/MidwestSec_bw.png"
 
 [params.article]
@@ -59,19 +59,25 @@ url = "/kb/"
 weight = 30
 
 [[menu.main]]
+identifier = "reports"
+name = "Reports"
+url = "/reports/"
+weight = 40
+
+[[menu.main]]
 identifier = "blog"
 name = "Blog"
 url = "/blog/"
-weight = 40
+weight = 50
 
 [[menu.main]]
 identifier = "newsletter"
 name = "Newsletter"
 url = "https://newsletter.midwestsec.com"
-weight = 50
+weight = 60
 
 [[menu.main]]
 identifier = "whoami"
 name = "Whoami"
 url = "/whoami/"
-weight = 60
+weight = 70

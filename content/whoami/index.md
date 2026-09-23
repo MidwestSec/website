@@ -1,26 +1,100 @@
 ---
 title: "whoami"
-date: 2026-06-19
-draft: false
+description: "About me, my background in IT and cybersecurity, and the story behind MidwestSec."
+toc: true
 ---
 
 # whoami
 
+My name is Zach, and welcome to MidwestSec.
 
-My name is Zach, and welcome to my journey through IT and cybersecurity. The purpose of this blog is to share my thoughts, lessons learned, and walkthroughs of things I’m working on.
+I graduated from Iowa State University with a degree in Management Information Systems (MIS) and started working for a small ISP shortly after graduation. Since then, I've spent my career working across just about every corner of IT.
 
-A little about me; I graduated from Iowa State University with a degree in Management Information Systems (MIS). After graduating, I started working at an ISP as an IT Specialist. Over time, I’ve become a bit of a jack of all trades, master of none. Now, I’m focused on sharpening my skills in both red team and blue team disciplines. I strongly believe that to defend against attacks, you first need to understand how they work.
+Networking, servers, Active Directory, Microsoft 365, virtualization, firewalls, endpoint management, backups, security, troubleshooting, and everything else that comes with supporting SMB and local-government environments.
 
-So far, I’ve earned CompTIA Security+ and CySA+, TCM’s Practical Junior Penetration Tester (PJPT), and ISC2’s CISSP certifications.
+Working for a smaller organization means specializing in only one area isn't always an option. Over the years, that has given me the opportunity to work with a wide range of technologies and develop a strong understanding of how the different pieces of an IT environment fit together.
 
-As of March 2026, my current goal is to obtain TCM’s Practical Network Penetration Tester (PNPT), with the Offensive Security Certified Professional (OSCP) coming after that.
+Eventually, that broad IT background led me deeper into cybersecurity.
 
-After completing the PJPT in July 2025, I worked through TCM’s Windows Privilege Escalation, Linux Privilege Escalation, OSINT, and External Playbook courses. All of this has been in preparation for the PNPT. I’ve thoroughly enjoyed working through this content, particularly the Linux priv esc.
+## Offensive and Defensive Security
 
-The name MidwestSec came about after attending BSides Des Moines. Up until then, I had never really had a cybersecurity handle or online identity. As I became more involved in the community, started writing technical content, and spent more time learning offensive security, I wanted a name that reflected both my interests and where I came from. MidwestSec felt like a natural fit.
+My primary responsibility professionally is on the defensive side.
 
-Right now, I’m working through a set of recommended lab machines I found through Reddit (thanks to this [Medium post](https://medium.com/@littlebrother2084/pnpt-ctf-unofficial-lab-prep-1c41b3cd472d)). I recently completed Hack The Box’s Forest machine, and I’ll be posting a write-up soon detailing how I approached it.
+I'm responsible for helping secure the networks, servers, endpoints, identities, and cloud environments that I manage. That includes everything from endpoint detection and response and vulnerability management to Microsoft 365 security, SIEM, network security, hardening, and incident response.
 
-Many of my earlier write-ups and notes were originally published on Medium. After my account was taken down due to content related to retired Hack The Box walkthroughs, I decided it was time to build a site that I controlled myself. This blog is the result of that decision and will serve as the permanent home for my content going forward. You'll notice the post dates are done prior to this one. I've intentionally done this to preserve the order of completiion.
+But I've become increasingly interested in offensive security as well.
 
-This blog will document my progress, challenges, and wins as I work toward the PNPT (and beyond). It also serves as a personal reference I can revisit over time. If you’re reading this, I hope you find something useful along the way.
+I strongly believe that one of the best ways to become a better defender is to understand how attackers operate.
+
+It's one thing to know that a configuration is insecure.
+
+It's another thing entirely to exploit that configuration in a lab, gain access to a system, escalate privileges, move through a network, and see firsthand how several seemingly minor weaknesses can become a complete attack path.
+
+Learning offensive security has changed the way I approach defensive security.
+
+That's a major reason MidwestSec exists.
+
+## Certifications
+
+Over the last several years, I've continued building my knowledge through certifications, training, labs, and a lot of hands-on work.
+
+My current certifications include:
+
+- ISC2 CISSP
+- CompTIA Security+
+- CompTIA CySA+
+- TCM Security Practical Network Penetration Tester (PNPT)
+- TCM Security Practical Junior Penetration Tester (PJPT)
+
+The certifications are milestones, but the practical knowledge gained while preparing for them has always been more important to me than adding another acronym.
+
+## The Offensive Security Journey
+
+My first major step into practical offensive security was TCM Security's Practical Ethical Hacking training, followed by Windows and Linux privilege escalation training.
+
+In July 2025, I earned the PJPT, which gave me my first experience with a practical penetration testing certification.
+
+From there, I continued spending time in Hack The Box, working through individual machines and larger network environments while building my Active Directory, enumeration, privilege escalation, pivoting, and reporting skills.
+
+In September 2026, I earned the PNPT.
+
+The PNPT represented a significant step forward in my penetration testing journey and reinforced something I've come to appreciate more as I've learned offensive security: successfully compromising a system is only part of the job.
+
+Enumeration, documentation, reporting, remediation, and being able to clearly explain what happened are just as important.
+
+I wrote more about that experience in my [PNPT blog post](/blog/passing-the-pnpt/).
+
+## What's Next?
+
+My next major certification goal is the Offensive Security Certified Professional (OSCP).
+
+Before jumping directly into it, I'm continuing to strengthen the areas that will make me a better penetration tester overall, particularly:
+
+- Web application penetration testing
+- Active Directory
+- Windows and Linux privilege escalation
+- Network pivoting and lateral movement
+- Enumeration
+- Reporting and documentation
+
+I'm continuing to work through TCM Academy training and spending plenty of time in Hack The Box along the way.
+
+The goal isn't simply to pass another certification.
+
+It's to keep developing the offensive skills that make me better at understanding and defending the environments I'm responsible for.
+
+## MidwestSec
+
+MidwestSec is where I document that journey.
+
+Some of what you'll find here comes from penetration testing labs. Some comes from problems I've encountered professionally. Some is simply documentation I've written because I know I'll need it again six months from now.
+
+The site is divided into a few main areas:
+
+- **[Walkthroughs](/walkthroughs/)** for penetration testing labs and attack paths
+- **[KB](/KB/)** for commands, configurations, troubleshooting, and technical notes
+- **[Blog](/blog/)** for certifications, projects, professional updates, and longer-form posts
+
+I'm still learning, and that's really the point.
+
+>Become a better defender by learning how to attack.
