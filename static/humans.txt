@@ -1,0 +1,23 @@
+/* TEAM */
+
+Name: Zach
+Site: MidwestSec
+Location: Iowa, USA
+
+/* SITE */
+
+URL: https://midwestsec.com
+Built with: Hugo
+Hosted on: GitHub Pages
+Focus: IT, cybersecurity, penetration testing, and lessons learned
+
+/* ABOUT */
+
+Learning. Breaking. Defending.
+
+/* HELLO */
+
+If you found this file, I like your curiosity.
+
+Shoot me a message and let me know how you ended up here:
+hello@midwestsec.com

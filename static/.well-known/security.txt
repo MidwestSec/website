@@ -1,0 +1,3 @@
+Contact: mailto:securitytxt@midwestsec.com
+Canonical: https://midwestsec.com/.well-known/security.txt
+Preferred-Languages: en
