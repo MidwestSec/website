@@ -1,3 +1,4 @@
 Contact: mailto:securitytxt@midwestsec.com
 Canonical: https://midwestsec.com/.well-known/security.txt
 Preferred-Languages: en
+Expires: 2027-09-25T00:00:00Z

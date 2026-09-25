@@ -1,5 +1,5 @@
 ---
-title: "Home"
+title: "MidwestSec | Cybersecurity, Pentesting & IT"
 description: "MidwestSec - Cybersecurity, IT infrastructure, penetration testing, and lessons learned along the way."
 toc: true
 ---
@@ -76,7 +76,7 @@ If you're here to learn, break something in a lab, troubleshoot a problem, or se
 Check out the [Walkthroughs](/walkthroughs/) for penetration testing labs, attack paths, and lessons learned along the way.
 
 **Looking for a command or solution?**  
-Head over to the [KB](/KB/) for technical notes, commands, configurations, and fixes I've documented for future reference.
+Head over to the [KB](/kb/) for technical notes, commands, configurations, and fixes I've documented for future reference.
 
 **Want to follow the journey?**  
 The [Blog](/blog/) covers certifications, projects, professional updates, and what I'm currently working toward.
